@@ -11,7 +11,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-  <!-- SheetJS (XLSX) para exportación en Excel puro con formato -->
+  <!-- SheetJS (XLSX) para exportación a Excel (.xlsx) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -75,24 +75,24 @@
     <!-- SECCIÓN: ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) -->
     <section id="sec-saip" class="space-y-6">
       
-      <!-- Encabezado con Filtros Independientes del Área -->
+      <!-- Encabezado con Filtros Independientes de SAIP (Predeterminado en Año 2026) -->
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
           <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Acceso a la Información Pública (SAIP)</h2>
           <p class="text-xs text-slate-500">Indicadores de gestión, plazos normativos y unidades derivadas</p>
         </div>
 
-        <!-- FILTROS INDEPENDIENTES PARA SAIP -->
+        <!-- FILTROS INDEPENDIENTES DE SAIP -->
         <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
           <span class="font-bold text-slate-700 uppercase tracking-wider text-[10px]"><i class="fa-solid fa-filter text-blue-600 mr-1"></i> Filtro SAIP:</span>
 
           <div class="flex items-center gap-1">
             <label class="text-slate-600 font-medium">Año:</label>
-            <select id="filterYearSaip" onchange="applyFiltersSaip()" class="bg-white text-slate-800 rounded px-2 py-1 border border-slate-300 outline-none focus:border-blue-600 font-medium">
-              <option value="ALL" selected>Todos los Años</option>
-              <option value="2026">2026</option>
+            <select id="filterYearSaip" onchange="applyFiltersSaip()" class="bg-white text-slate-800 rounded px-2 py-1 border border-slate-300 outline-none focus:border-blue-600 font-bold">
+              <option value="2026" selected>2026</option>
               <option value="2025">2025</option>
               <option value="2024">2024</option>
+              <option value="ALL">Todos los Años</option>
             </select>
           </div>
 
@@ -191,7 +191,7 @@
         </div>
       </div>
 
-      <!-- TABLA DE CONSOLIDADO CON EXPORTACIÓN REAL A EXCEL Y FORMATED PRINT -->
+      <!-- TABLA DE CONSOLIDADO CON EXPORTACIÓN A EXCEL (.XLSX) Y VISTA DE IMPRESIÓN -->
       <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow space-y-4" id="printable-area">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
@@ -525,7 +525,6 @@
       }
     }
 
-    // Exportación Profesional en Formato Excel Puro (.xlsx)
     function exportSaipToExcelXLSX() {
       if (currentExportData.length === 0) {
         alert("No hay datos cargados para exportar.");
@@ -536,10 +535,8 @@
       const month = document.getElementById('filterMonthSaip').value;
       const fileName = `Consolidado_SAIP_OACGD_${year}_${month}.xlsx`;
 
-      // Crear hoja de trabajo SheetJS
       const worksheet = XLSX.utils.json_to_sheet(currentExportData);
 
-      // Ancho automático de columnas
       const columnWidths = [
         { wch: 6 },
         { wch: 35 },
@@ -553,11 +550,9 @@
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Consolidado_SAIP");
 
-      // Descargar archivo Excel
       XLSX.writeFile(workbook, fileName);
     }
 
-    // Descarga de Gráficos en Formato de Imagen PNG para Informes
     function downloadChartImage(chartId, fileName) {
       const chartCanvas = document.getElementById(chartId);
       if(!chartCanvas) return;
