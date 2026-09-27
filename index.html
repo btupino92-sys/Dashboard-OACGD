@@ -75,7 +75,7 @@
     <!-- SECCIÓN: ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) -->
     <section id="sec-saip" class="space-y-6">
       
-      <!-- Encabezado con Filtros Independientes de SAIP (Predeterminado en Año 2026) -->
+      <!-- Encabezado con Filtros Independientes de SAIP -->
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
           <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Acceso a la Información Pública (SAIP)</h2>
@@ -160,7 +160,7 @@
         </div>
       </div>
 
-      <!-- Gráficos Principales con Botón de Descarga de Imagen PNG -->
+      <!-- Gráficos Principales -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow relative">
           <div class="flex justify-between items-center mb-4">
@@ -191,7 +191,7 @@
         </div>
       </div>
 
-      <!-- TABLA DE CONSOLIDADO CON EXPORTACIÓN A EXCEL (.XLSX) Y VISTA DE IMPRESIÓN -->
+      <!-- TABLA DE CONSOLIDADO -->
       <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow space-y-4" id="printable-area">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
@@ -224,8 +224,8 @@
             <thead>
               <tr class="bg-slate-800 text-white uppercase text-[10px] tracking-wider sticky top-0 z-10">
                 <th class="py-2.5 px-3 border border-slate-700">#</th>
-                <th class="py-2.5 px-3 border border-slate-700">Área / Unidad Orgánica</th>
-                <th class="py-2.5 px-3 border border-slate-700">Acción / Detalle (Columna O)</th>
+                <th class="py-2.5 px-3 border border-slate-700">Unidad de Organización / Entidad</th>
+                <th class="py-2.5 px-3 border border-slate-700">Acción / Detalle</th>
                 <th class="py-2.5 px-3 border border-slate-700">Año - Mes</th>
                 <th class="py-2.5 px-3 border border-slate-700 text-center">Cantidad Documentos</th>
                 <th class="py-2.5 px-3 border border-slate-700 text-right">% Participación</th>
@@ -237,7 +237,7 @@
             <tfoot class="bg-slate-900 text-white font-bold text-xs sticky bottom-0 z-10 border-t-2 border-slate-700">
               <tr>
                 <td colspan="4" class="py-3 px-3 uppercase tracking-wider text-right border border-slate-800">
-                  <i class="fa-solid fa-calculator mr-1.5 text-blue-400"></i> Total Documentos Mapeados (Filtro SAIP):
+                  <i class="fa-solid fa-calculator mr-1.5 text-blue-400"></i> Total Documentos:
                 </td>
                 <td class="py-3 px-3 text-center text-sm font-extrabold text-blue-300 bg-slate-800 border border-slate-800" id="tfoot-total-docs">0</td>
                 <td class="py-3 px-3 text-right text-emerald-400 font-bold border border-slate-800" id="tfoot-total-pct">100%</td>
@@ -316,6 +316,25 @@
       });
     }
 
+    // Auxiliar para convertir cadenas "DD/MM/YYYY" a un objeto Date real
+    function parseDatePeruvian(dateStr) {
+      if (!dateStr || typeof dateStr !== 'string') return null;
+      const clean = dateStr.trim();
+      const parts = clean.split('/');
+      if (parts.length < 3) return null;
+
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      let year = parseInt(parts[2], 10);
+
+      if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+
+      // Corregir años tipeados en 2 dígitos o incompletos
+      if (year < 100) year += 2000;
+
+      return new Date(year, month, day);
+    }
+
     function applyFiltersSaip() {
       const selectedYear = document.getElementById('filterYearSaip').value;
       const selectedMonth = document.getElementById('filterMonthSaip').value;
@@ -343,40 +362,77 @@
       const total = data.length;
       let enPlazo = 0;
       let fueraPlazo = 0;
+      let pendientes = 0;
       let totalDias = 0;
       let countDias = 0;
       let modalidades = {};
       let areasConsolidadas = {};
 
+      const hoy = new Date();
+
       data.forEach(r => {
-        const estado = (r['ATENCION PLAZO'] || '').toUpperCase().trim();
-        if (estado.includes('EN PLAZO') || estado === 'ATENDIDO') {
-          enPlazo++;
-        } else if (estado.includes('FUERA')) {
-          fueraPlazo++;
+        // Obtenemos fechas por encabezados mapeados
+        const fechaIngresoStr = r['FECHA INGRESO'] || r['Fecha de ingreso'];
+        const fechaVencimientoStr = r['PLAZO DE VENCIMIENTO'] || r['Plazo de vencimiento'];
+        const fechaNotificacionStr = r['FECHA DE NOTIFICACIÓN'] || r['Fecha de Notificación'] || r['NOTIFICACIÓN POR CORREO'];
+
+        const dtIngreso = parseDatePeruvian(fechaIngresoStr);
+        const dtVencimiento = parseDatePeruvian(fechaVencimientoStr);
+        const dtNotificacion = parseDatePeruvian(fechaNotificacionStr);
+
+        // 1. Evaluación de Plazo Normativo (Mapeo por Fechas U y AA)
+        if (dtVencimiento) {
+          if (dtNotificacion) {
+            // El documento fue notificado al ciudadano
+            if (dtNotificacion <= dtVencimiento) {
+              enPlazo++;
+            } else {
+              fueraPlazo++;
+            }
+          } else {
+            // Documento pendiente de notificación
+            if (hoy > dtVencimiento) {
+              fueraPlazo++; // Vencido sin notificar
+            } else {
+              pendientes++; // Todavía en trámite dentro del plazo
+            }
+          }
+        } else {
+          // Evaluación por texto como fallback alternativo
+          const estadoTexto = (r['ATENCION PLAZO'] || '').toUpperCase().trim();
+          if (estadoTexto.includes('EN PLAZO') || estadoTexto === 'ATENDIDO') {
+            enPlazo++;
+          } else if (estadoTexto.includes('FUERA')) {
+            fueraPlazo++;
+          } else {
+            pendientes++;
+          }
         }
 
-        const diasVal = r['DIAS TRANSCURRIDOS'];
-        if (diasVal !== undefined && diasVal !== '') {
-          const dias = parseInt(diasVal);
-          if (!isNaN(dias)) {
-            totalDias += dias;
+        // 2. Días Transcurridos
+        if (dtIngreso) {
+          const dtFin = dtNotificacion || hoy;
+          const diffTime = dtFin - dtIngreso;
+          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+          if (!isNaN(diffDays) && diffDays >= 0) {
+            totalDias += diffDays;
             countDias++;
           }
         }
 
-        let mod = (r['MODALIDAD DE INGRESO'] || 'OTROS').trim().toUpperCase();
+        // 3. Modalidad de Ingreso
+        let mod = (r['Origen de la solicitud'] || r['MODALIDAD DE INGRESO'] || 'OTROS').trim().toUpperCase();
         if (mod) {
           modalidades[mod] = (modalidades[mod] || 0) + 1;
         }
 
-        let areaNom = (r['AREA'] || 'SIN DERIVAR / NO ESPECIFICA').trim().toUpperCase();
-        let detalleAccion = (r['DETALLE'] || 'SIN DETALLE').trim().toUpperCase();
-        let fechaStr = r['FECHA INGRESO'] || '';
+        // 4. Mapeo de Área y Detalle
+        let areaNom = (r['Área derivada'] || r['AREA'] || 'SIN DERIVAR / NO ESPECIFICA').trim().toUpperCase();
+        let detalleAccion = (r['Forma de entrega'] || r['DETALLE'] || 'SIN DETALLE').trim().toUpperCase();
         let keyMes = 'GENERAL';
 
-        if (fechaStr.includes('/')) {
-          let p = fechaStr.split('/');
+        if (fechaIngresoStr && fechaIngresoStr.includes('/')) {
+          let p = fechaIngresoStr.split('/');
           if (p.length >= 3) {
             let mNum = p[1].padStart(2, '0');
             let yNum = p[2].trim();
@@ -388,6 +444,7 @@
         areasConsolidadas[areaKey] = (areasConsolidadas[areaKey] || 0) + 1;
       });
 
+      // Actualizar KPIs de la interfaz
       document.getElementById('kpi-total-saip').innerText = total;
       document.getElementById('kpi-plazo-saip').innerText = enPlazo;
       document.getElementById('kpi-fueraplazo-saip').innerText = fueraPlazo;
@@ -400,19 +457,19 @@
       const avgDias = countDias > 0 ? (totalDias / countDias).toFixed(1) : 0;
       document.getElementById('kpi-dias-saip').innerText = avgDias;
 
-      renderCharts(enPlazo, fueraPlazo, total - (enPlazo + fueraPlazo), modalidades);
+      renderCharts(enPlazo, fueraPlazo, pendientes, modalidades);
       renderTableAreas(areasConsolidadas, total);
     }
 
-    function renderCharts(enPlazo, fueraPlazo, otros, modalidades) {
+    function renderCharts(enPlazo, fueraPlazo, pendientes, modalidades) {
       const ctx1 = document.getElementById('chartPlazos').getContext('2d');
       if (chartPlazosObj) chartPlazosObj.destroy();
       chartPlazosObj = new Chart(ctx1, {
         type: 'doughnut',
         data: {
-          labels: ['En Plazo', 'Fuera de Plazo', 'En Proceso / Pendientes'],
+          labels: ['En Plazo', 'Fuera de Plazo', 'En Trámite / Pendientes'],
           datasets: [{
-            data: [enPlazo, fueraPlazo, Math.max(0, otros)],
+            data: [enPlazo, fueraPlazo, Math.max(0, pendientes)],
             backgroundColor: ['#10b981', '#f43f5e', '#cbd5e1']
           }]
         },
