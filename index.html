@@ -9,7 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- PapaParse para procesar CSV sin restricciones -->
+  <!-- PapaParse para procesar CSV -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -114,10 +114,10 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
         <div>
           <h2 class="text-lg font-bold text-slate-800">Matriz de Acceso a la Información Pública (SAIP)</h2>
-          <p class="text-xs text-slate-500">Indicadores de gestión de solicitudes, tiempos de atención y plazos normativos</p>
+          <p class="text-xs text-slate-500">Indicadores de gestión de solicitudes, tiempos de atención y derivación a unidades orgánicas</p>
         </div>
         <span class="inline-flex items-center text-xs bg-emerald-50 text-emerald-700 font-medium px-3 py-1 rounded-full border border-emerald-200 w-fit">
-          <i class="fa-solid fa-circle text-[8px] mr-1.5 text-emerald-500 animate-pulse"></i> Matriz Completa Cargada
+          <i class="fa-solid fa-circle text-[8px] mr-1.5 text-emerald-500 animate-pulse"></i> Sincronizado con Google Sheets
         </span>
       </div>
 
@@ -160,7 +160,7 @@
         </div>
       </div>
 
-      <!-- Gráficos -->
+      <!-- Gráficos Principales -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
           <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
@@ -180,6 +180,44 @@
           </div>
         </div>
       </div>
+
+      <!-- TABLA DE CONSOLIDADO DE ÁREAS Y TIPO DE MOVIMIENTO (COLUMNA O) -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-sitemap text-blue-600"></i> Consolidado de Áreas y Tipo de Movimiento (Derivado / Encausado / Traslado)
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Detalle mapeado desde la Columna O (Detalle) y Columna P (Área) por Periodo Mensual</p>
+          </div>
+
+          <!-- Buscador interno -->
+          <div class="relative">
+            <input type="text" id="searchArea" onkeyup="filterTableArea()" placeholder="Buscar Área o Detalle..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-blue-500 w-full sm:w-64">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-2.5 top-2.5"></i>
+          </div>
+        </div>
+
+        <!-- Tabla Responsive -->
+        <div class="overflow-x-auto max-h-96">
+          <table class="w-full text-left text-xs border-collapse" id="tableAreas">
+            <thead>
+              <tr class="bg-slate-800 text-white uppercase text-[10px] tracking-wider sticky top-0 z-10">
+                <th class="py-2.5 px-3">#</th>
+                <th class="py-2.5 px-3">Área / Unidad Orgánica</th>
+                <th class="py-2.5 px-3">Acción / Detalle (Columna O)</th>
+                <th class="py-2.5 px-3">Año - Mes</th>
+                <th class="py-2.5 px-3 text-center">Cantidad Documentos</th>
+                <th class="py-2.5 px-3 text-right">% Participación</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-areas" class="divide-y divide-slate-100 text-slate-700">
+              <!-- Carga Dinámica por JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </section>
 
     <!-- PESTAÑA: CONSOLIDADO GENERAL -->
@@ -196,8 +234,13 @@
   </main>
 
   <script>
-    // Endpoint directo de exportación CSV (ignora filtros y vistas creadas por los usuarios en la hoja)
     const SAIP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/10dbxxD902fn7seizSeShVYtOiZQc1KCFBPpnbmo7tCU/export?format=csv';
+
+    const MESES_NOMBRES = {
+      '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril',
+      '05': 'Mayo', '06': 'Junio', '07': 'Julio', '08': 'Agosto',
+      '09': 'Setiembre', '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre'
+    };
 
     let rawSaipData = [];
     let chartPlazosObj = null;
@@ -228,7 +271,6 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          // Filtrar únicamente filas que tengan un número o ticket real registrado para no contar filas en blanco
           rawSaipData = results.data.filter(row => {
             const hasNro = row['NRO'] && row['NRO'].trim() !== '';
             const hasTicket = row['TICKET'] && row['TICKET'].trim() !== '';
@@ -253,7 +295,7 @@
         if (!fechaStr) return selectedYear === 'ALL' && selectedMonth === 'ALL';
 
         const parts = fechaStr.split('/');
-        if (parts.length < 3) return true; // Si la fecha está en otro formato pero existe la fila, incluirla si es filtro ALL
+        if (parts.length < 3) return true;
 
         const month = parts[1].padStart(2, '0');
         const year = parts[2].trim();
@@ -274,9 +316,10 @@
       let totalDias = 0;
       let countDias = 0;
       let modalidades = {};
+      let areasConsolidadas = {};
 
       data.forEach(r => {
-        // Normalizar Estado de Plazo
+        // Estado de Plazo
         const estado = (r['ATENCION PLAZO'] || '').toUpperCase().trim();
         if (estado.includes('EN PLAZO') || estado === 'ATENDIDO') {
           enPlazo++;
@@ -299,9 +342,27 @@
         if (mod) {
           modalidades[mod] = (modalidades[mod] || 0) + 1;
         }
+
+        // Mapeo Columna P (AREA) y Columna O (DETALLE)
+        let areaNom = (r['AREA'] || 'SIN DERIVAR / NO ESPECIFICA').trim().toUpperCase();
+        let detalleAccion = (r['DETALLE'] || 'SIN DETALLE').trim().toUpperCase();
+        let fechaStr = r['FECHA INGRESO'] || '';
+        let keyMes = 'GENERAL';
+
+        if (fechaStr.includes('/')) {
+          let p = fechaStr.split('/');
+          if (p.length >= 3) {
+            let mNum = p[1].padStart(2, '0');
+            let yNum = p[2].trim();
+            keyMes = `${yNum} - ${MESES_NOMBRES[mNum] || mNum}`;
+          }
+        }
+
+        let areaKey = `${areaNom}||${detalleAccion}||${keyMes}`;
+        areasConsolidadas[areaKey] = (areasConsolidadas[areaKey] || 0) + 1;
       });
 
-      // Actualizar los KPIs en pantalla
+      // Actualizar KPIs
       document.getElementById('kpi-total-saip').innerText = total;
       document.getElementById('kpi-plazo-saip').innerText = enPlazo;
       document.getElementById('kpi-fueraplazo-saip').innerText = fueraPlazo;
@@ -315,6 +376,7 @@
       document.getElementById('kpi-dias-saip').innerText = avgDias;
 
       renderCharts(enPlazo, fueraPlazo, total - (enPlazo + fueraPlazo), modalidades);
+      renderTableAreas(areasConsolidadas, total);
     }
 
     function renderCharts(enPlazo, fueraPlazo, otros, modalidades) {
@@ -351,6 +413,71 @@
           plugins: { legend: { display: false } }
         }
       });
+    }
+
+    function renderTableAreas(areasDict, totalGeneral) {
+      const tbody = document.getElementById('tbody-areas');
+      tbody.innerHTML = '';
+
+      let sortedKeys = Object.keys(areasDict).sort((a, b) => areasDict[b] - areasDict[a]);
+
+      if (sortedKeys.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No hay registros de movimientos para el filtro seleccionado.</td></tr>`;
+        return;
+      }
+
+      sortedKeys.forEach((key, index) => {
+        let [areaName, detalleAccion, mesYear] = key.split('||');
+        let cantidad = areasDict[key];
+        let pct = totalGeneral > 0 ? ((cantidad / totalGeneral) * 100).toFixed(1) : 0;
+
+        // Estilo de badge según tipo de detalle de columna O
+        let badgeClass = "bg-slate-100 text-slate-700 border-slate-300";
+        if (detalleAccion.includes("DERIVADO")) {
+          badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
+        } else if (detalleAccion.includes("ENCAUSADO")) {
+          badgeClass = "bg-purple-50 text-purple-700 border-purple-200";
+        } else if (detalleAccion.includes("TRASLADO")) {
+          badgeClass = "bg-amber-50 text-amber-700 border-amber-200";
+        }
+
+        let row = document.createElement('tr');
+        row.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+        row.innerHTML = `
+          <td class="py-2.5 px-3 font-semibold text-slate-400">${index + 1}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-800">${areaName}</td>
+          <td class="py-2.5 px-3">
+            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-semibold border ${badgeClass}">
+              ${detalleAccion}
+            </span>
+          </td>
+          <td class="py-2.5 px-3 text-slate-500">${mesYear}</td>
+          <td class="py-2.5 px-3 text-center font-extrabold text-blue-700 bg-blue-50/50 rounded-lg">${cantidad}</td>
+          <td class="py-2.5 px-3 text-right font-medium text-slate-600">${pct}%</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function filterTableArea() {
+      const input = document.getElementById('searchArea').value.toUpperCase();
+      const trs = document.getElementById('tbody-areas').getElementsByTagName('tr');
+
+      for (let i = 0; i < trs.length; i++) {
+        const areaTd = trs[i].getElementsByTagName('td')[1];
+        const detalleTd = trs[i].getElementsByTagName('td')[2];
+        
+        if (areaTd || detalleTd) {
+          const areaText = areaTd ? (areaTd.textContent || areaTd.innerText) : '';
+          const detalleText = detalleTd ? (detalleTd.textContent || detalleTd.innerText) : '';
+          
+          if (areaText.toUpperCase().indexOf(input) > -1 || detalleText.toUpperCase().indexOf(input) > -1) {
+            trs[i].style.display = "";
+          } else {
+            trs[i].style.display = "none";
+          }
+        }
+      }
     }
   </script>
 </body>
