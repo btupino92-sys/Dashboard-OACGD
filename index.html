@@ -11,7 +11,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-  <!-- SheetJS (XLSX) para exportación a Excel (.xlsx) -->
+  <!-- SheetJS (XLSX) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -32,30 +32,21 @@
 
   <!-- Header Institucional -->
   <header class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50 no-print">
-    <!-- Banner de Logos y Título -->
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
-      
-      <!-- Logo Izquierda: MIMP -->
       <div class="flex items-center">
         <img src="https://i.postimg.cc/tg2LpgFH/PCM-MIMP.png" alt="Logo MIMP" class="h-12 md:h-14 object-contain">
       </div>
-
-      <!-- Título Central de la Oficina -->
       <div class="text-center">
         <h1 class="text-base md:text-xl font-bold text-slate-900 uppercase tracking-tight">
           Dashboard de la Oficina de Atención a la Ciudadanía y Gestión Documental
         </h1>
         <p class="text-xs text-slate-500 font-medium">Monitoreo y Seguimiento Consolidado en Tiempo Real</p>
       </div>
-
-      <!-- Logo Derecha: Perú Responde -->
       <div class="flex items-center">
         <img src="https://i.postimg.cc/VND3mNXQ/Logo-Peru-Responde-Logo-horizontal-(1).png" alt="Logo Perú Responde" class="h-10 md:h-12 object-contain">
       </div>
-
     </div>
 
-    <!-- Navegación por Áreas / Pestañas -->
     <nav class="bg-slate-900 border-b border-slate-800 text-slate-300 text-xs md:text-sm">
       <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-2 md:space-x-4">
         <button onclick="switchTab('resumen')" id="tab-resumen" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-chart-pie mr-1.5 text-slate-400"></i>Consolidado General</button>
@@ -69,20 +60,15 @@
     </nav>
   </header>
 
-  <!-- Contenido Principal -->
   <main class="max-w-7xl mx-auto px-4 py-6">
-
-    <!-- SECCIÓN: ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) -->
     <section id="sec-saip" class="space-y-6">
       
-      <!-- Encabezado con Filtros Independientes de SAIP -->
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
           <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Acceso a la Información Pública (SAIP)</h2>
           <p class="text-xs text-slate-500">Indicadores de gestión, plazos normativos y unidades derivadas</p>
         </div>
 
-        <!-- FILTROS INDEPENDIENTES DE SAIP -->
         <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
           <span class="font-bold text-slate-700 uppercase tracking-wider text-[10px]"><i class="fa-solid fa-filter text-blue-600 mr-1"></i> Filtro SAIP:</span>
 
@@ -156,7 +142,7 @@
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-dias-saip">0</div>
-          <p class="text-xs text-slate-400 mt-1">Días transcurridos promedio</p>
+          <p class="text-xs text-slate-400 mt-1">Días hábiles / transcurridos promedio</p>
         </div>
       </div>
 
@@ -201,7 +187,6 @@
             <p class="text-xs text-slate-500 mt-0.5">Sincronizado dinámicamente con los Filtros de SAIP</p>
           </div>
 
-          <!-- Acciones de Búsqueda y Exportación -->
           <div class="flex flex-wrap items-center gap-2 no-print">
             <button onclick="exportSaipToExcelXLSX()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-sm">
               <i class="fa-solid fa-file-excel"></i> Exportar a Excel (.xlsx)
@@ -218,7 +203,6 @@
           </div>
         </div>
 
-        <!-- Tabla Responsive -->
         <div class="overflow-x-auto max-h-96">
           <table class="w-full text-left text-xs border-collapse" id="tableAreas">
             <thead>
@@ -232,7 +216,6 @@
               </tr>
             </thead>
             <tbody id="tbody-areas" class="divide-y divide-slate-100 text-slate-700">
-              <!-- Carga Dinámica por JS -->
             </tbody>
             <tfoot class="bg-slate-900 text-white font-bold text-xs sticky bottom-0 z-10 border-t-2 border-slate-700">
               <tr>
@@ -249,7 +232,6 @@
 
     </section>
 
-    <!-- PESTAÑA: CONSOLIDADO GENERAL -->
     <section id="sec-resumen" class="hidden space-y-4">
       <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
         <div class="flex items-center gap-3 text-blue-900 mb-2">
@@ -302,10 +284,8 @@
         skipEmptyLines: true,
         complete: function(results) {
           rawSaipData = results.data.filter(row => {
-            const hasNro = row['NRO'] && row['NRO'].trim() !== '';
-            const hasTicket = row['TICKET'] && row['TICKET'].trim() !== '';
-            const hasFecha = row['FECHA INGRESO'] && row['FECHA INGRESO'].trim() !== '';
-            return hasNro || hasTicket || hasFecha;
+            const values = Object.values(row).join(' ');
+            return values && values.trim() !== '';
           });
 
           applyFiltersSaip();
@@ -316,21 +296,37 @@
       });
     }
 
-    // Auxiliar para convertir cadenas "DD/MM/YYYY" a un objeto Date real
+    // Búsqueda flexible de campos sin importar variaciones de minúsculas/mayúsculas/espacios
+    function getFieldValue(row, possibleKeys) {
+      const keys = Object.keys(row);
+      for (let pKey of possibleKeys) {
+        const foundKey = keys.find(k => k.trim().toLowerCase() === pKey.toLowerCase());
+        if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null) {
+          const val = String(row[foundKey]).trim();
+          if (val !== '') return val;
+        }
+      }
+      return '';
+    }
+
+    // Parser robusto de fechas (formato peruano DD/MM/YYYY)
     function parseDatePeruvian(dateStr) {
       if (!dateStr || typeof dateStr !== 'string') return null;
-      const clean = dateStr.trim();
-      const parts = clean.split('/');
-      if (parts.length < 3) return null;
+      let clean = dateStr.trim();
 
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      let year = parseInt(parts[2], 10);
+      // Extraer solo patrones que parezcan fechas DD/MM/YYYY
+      const match = clean.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+      if (!match) return null;
+
+      let day = parseInt(match[1], 10);
+      let month = parseInt(match[2], 10) - 1;
+      let year = parseInt(match[3], 10);
 
       if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
-
-      // Corregir años tipeados en 2 dígitos o incompletos
       if (year < 100) year += 2000;
+
+      // Validar rangos coherentes
+      if (month < 0 || month > 11 || day < 1 || day > 31) return null;
 
       return new Date(year, month, day);
     }
@@ -340,14 +336,14 @@
       const selectedMonth = document.getElementById('filterMonthSaip').value;
 
       let filtered = rawSaipData.filter(row => {
-        const fechaStr = row['FECHA INGRESO'];
+        const fechaStr = getFieldValue(row, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']);
         if (!fechaStr) return selectedYear === 'ALL' && selectedMonth === 'ALL';
 
-        const parts = fechaStr.split('/');
-        if (parts.length < 3) return true;
+        const parsedDate = parseDatePeruvian(fechaStr);
+        if (!parsedDate) return true;
 
-        const month = parts[1].padStart(2, '0');
-        const year = parts[2].trim();
+        const year = String(parsedDate.getFullYear());
+        const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
 
         if (selectedYear !== 'ALL' && year !== selectedYear) return false;
         if (selectedMonth !== 'ALL' && month !== selectedMonth) return false;
@@ -371,36 +367,33 @@
       const hoy = new Date();
 
       data.forEach(r => {
-        // Obtenemos fechas por encabezados mapeados
-        const fechaIngresoStr = r['FECHA INGRESO'] || r['Fecha de ingreso'];
-        const fechaVencimientoStr = r['PLAZO DE VENCIMIENTO'] || r['Plazo de vencimiento'];
-        const fechaNotificacionStr = r['FECHA DE NOTIFICACIÓN'] || r['Fecha de Notificación'] || r['NOTIFICACIÓN POR CORREO'];
+        // Obtención flexible por nombres de columnas alternativos
+        const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso']);
+        const fechaVencimientoStr = getFieldValue(r, ['Plazo de vencimiento', 'PLAZO DE VENCIMIENTO', 'Plazo vencimiento']);
+        const fechaNotificacionStr = getFieldValue(r, ['Fecha de Notificación', 'FECHA DE NOTIFICACIÓN', 'Fecha de notificacion', 'Fecha Notificacion', 'NOTIFICACIÓN POR CORREO']);
 
         const dtIngreso = parseDatePeruvian(fechaIngresoStr);
         const dtVencimiento = parseDatePeruvian(fechaVencimientoStr);
         const dtNotificacion = parseDatePeruvian(fechaNotificacionStr);
 
-        // 1. Evaluación de Plazo Normativo (Mapeo por Fechas U y AA)
+        // 1. Evaluación de Plazo
         if (dtVencimiento) {
           if (dtNotificacion) {
-            // El documento fue notificado al ciudadano
             if (dtNotificacion <= dtVencimiento) {
               enPlazo++;
             } else {
               fueraPlazo++;
             }
           } else {
-            // Documento pendiente de notificación
             if (hoy > dtVencimiento) {
-              fueraPlazo++; // Vencido sin notificar
+              fueraPlazo++;
             } else {
-              pendientes++; // Todavía en trámite dentro del plazo
+              pendientes++;
             }
           }
         } else {
-          // Evaluación por texto como fallback alternativo
-          const estadoTexto = (r['ATENCION PLAZO'] || '').toUpperCase().trim();
-          if (estadoTexto.includes('EN PLAZO') || estadoTexto === 'ATENDIDO') {
+          const estadoTexto = getFieldValue(r, ['ATENCION PLAZO', 'Atención plazo', 'Estado']).toUpperCase();
+          if (estadoTexto.includes('EN PLAZO') || estadoTexto.includes('ATENDIDO')) {
             enPlazo++;
           } else if (estadoTexto.includes('FUERA')) {
             fueraPlazo++;
@@ -409,42 +402,40 @@
           }
         }
 
-        // 2. Días Transcurridos
-        if (dtIngreso) {
-          const dtFin = dtNotificacion || hoy;
-          const diffTime = dtFin - dtIngreso;
+        // 2. Promedio de Días (Solamente registros con Notificación Efectiva para evitar distorsiones)
+        if (dtIngreso && dtNotificacion) {
+          const diffTime = dtNotificacion - dtIngreso;
           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-          if (!isNaN(diffDays) && diffDays >= 0) {
+          // Control de seguridad: solo tomar valores reales (0 a 90 días)
+          if (!isNaN(diffDays) && diffDays >= 0 && diffDays <= 120) {
             totalDias += diffDays;
             countDias++;
           }
         }
 
-        // 3. Modalidad de Ingreso
-        let mod = (r['Origen de la solicitud'] || r['MODALIDAD DE INGRESO'] || 'OTROS').trim().toUpperCase();
-        if (mod) {
-          modalidades[mod] = (modalidades[mod] || 0) + 1;
-        }
+        // 3. Modalidad
+        let mod = getFieldValue(r, ['Origen de la solicitud', 'ORIGEN DE LA SOLICITUD', 'MODALIDAD DE INGRESO', 'Modalidad de ingreso']).toUpperCase();
+        if (!mod) mod = 'OTROS';
+        modalidades[mod] = (modalidades[mod] || 0) + 1;
 
-        // 4. Mapeo de Área y Detalle
-        let areaNom = (r['Área derivada'] || r['AREA'] || 'SIN DERIVAR / NO ESPECIFICA').trim().toUpperCase();
-        let detalleAccion = (r['Forma de entrega'] || r['DETALLE'] || 'SIN DETALLE').trim().toUpperCase();
+        // 4. Áreas y Detalle
+        let areaNom = getFieldValue(r, ['Área derivada', 'AREA DERIVADA', 'AREA', 'Área']).toUpperCase();
+        if (!areaNom) areaNom = 'SIN DERIVAR / NO ESPECIFICA';
+
+        let detalleAccion = getFieldValue(r, ['Forma de entrega', 'FORMA DE ENTREGA', 'DETALLE', 'Detalle']).toUpperCase();
+        if (!detalleAccion) detalleAccion = 'SIN DETALLE';
+
         let keyMes = 'GENERAL';
-
-        if (fechaIngresoStr && fechaIngresoStr.includes('/')) {
-          let p = fechaIngresoStr.split('/');
-          if (p.length >= 3) {
-            let mNum = p[1].padStart(2, '0');
-            let yNum = p[2].trim();
-            keyMes = `${yNum} - ${MESES_NOMBRES[mNum] || mNum}`;
-          }
+        if (dtIngreso) {
+          let mNum = String(dtIngreso.getMonth() + 1).padStart(2, '0');
+          let yNum = String(dtIngreso.getFullYear());
+          keyMes = `${yNum} - ${MESES_NOMBRES[mNum] || mNum}`;
         }
 
         let areaKey = `${areaNom}||${detalleAccion}||${keyMes}`;
         areasConsolidadas[areaKey] = (areasConsolidadas[areaKey] || 0) + 1;
       });
 
-      // Actualizar KPIs de la interfaz
       document.getElementById('kpi-total-saip').innerText = total;
       document.getElementById('kpi-plazo-saip').innerText = enPlazo;
       document.getElementById('kpi-fueraplazo-saip').innerText = fueraPlazo;
@@ -454,7 +445,7 @@
       document.getElementById('kpi-plazo-percent').innerText = `${pPlazo}% cumplimiento`;
       document.getElementById('kpi-fueraplazo-percent').innerText = `${pFuera}% del total`;
 
-      const avgDias = countDias > 0 ? (totalDias / countDias).toFixed(1) : 0;
+      const avgDias = countDias > 0 ? (totalDias / countDias).toFixed(1) : '0';
       document.getElementById('kpi-dias-saip').innerText = avgDias;
 
       renderCharts(enPlazo, fueraPlazo, pendientes, modalidades);
@@ -532,7 +523,7 @@
         });
 
         let badgeClass = "bg-slate-100 text-slate-700 border-slate-300";
-        if (detalleAccion.includes("DERIVADO")) {
+        if (detalleAccion.includes("CORREO") || detalleAccion.includes("DERIVADO")) {
           badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
         } else if (detalleAccion.includes("ENCAUSADO")) {
           badgeClass = "bg-purple-50 text-purple-700 border-purple-200";
