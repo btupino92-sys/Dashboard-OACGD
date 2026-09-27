@@ -9,7 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- PapaParse para procesar CSV -->
+  <!-- PapaParse para procesar CSV sin restricciones -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -58,16 +58,17 @@
           <div class="flex items-center gap-1.5">
             <label class="text-slate-300">Año:</label>
             <select id="filterYear" onchange="applyFilters()" class="bg-slate-800 text-white rounded px-2.5 py-1 border border-slate-700 outline-none focus:border-blue-500">
-              <option value="ALL">Todos los Años</option>
+              <option value="ALL" selected>Todos los Años</option>
               <option value="2026">2026</option>
               <option value="2025">2025</option>
+              <option value="2024">2024</option>
             </select>
           </div>
 
           <div class="flex items-center gap-1.5">
             <label class="text-slate-300">Mes:</label>
             <select id="filterMonth" onchange="applyFilters()" class="bg-slate-800 text-white rounded px-2.5 py-1 border border-slate-700 outline-none focus:border-blue-500">
-              <option value="ALL">Todos los Meses</option>
+              <option value="ALL" selected>Todos los Meses</option>
               <option value="01">Enero</option>
               <option value="02">Febrero</option>
               <option value="03">Marzo</option>
@@ -94,8 +95,8 @@
     <!-- Navegación por Áreas / Pestañas -->
     <nav class="bg-white border-b border-slate-200 text-slate-600 text-xs md:text-sm">
       <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-2 md:space-x-4">
-        <button onclick="switchTab('resumen')" id="tab-resumen" class="py-3 px-3 active-tab border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-chart-pie mr-1.5 text-blue-600"></i>Consolidado General</button>
-        <button onclick="switchTab('saip')" id="tab-saip" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-file-shield mr-1.5 text-blue-600"></i>Acceso a la Información (SAIP)</button>
+        <button onclick="switchTab('resumen')" id="tab-resumen" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-chart-pie mr-1.5 text-slate-400"></i>Consolidado General</button>
+        <button onclick="switchTab('saip')" id="tab-saip" class="py-3 px-3 active-tab border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-file-shield mr-1.5 text-blue-600"></i>Acceso a la Información (SAIP)</button>
         <button onclick="switchTab('atencion')" id="tab-atencion" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-headset mr-1.5 text-slate-400"></i>Atención a la Ciudadanía</button>
         <button onclick="switchTab('mesapartes')" id="tab-mesapartes" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-envelope-open-text mr-1.5 text-slate-400"></i>Mesa de Partes</button>
         <button onclick="switchTab('archivo')" id="tab-archivo" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-box-archive mr-1.5 text-slate-400"></i>Archivo Central</button>
@@ -116,7 +117,7 @@
           <p class="text-xs text-slate-500">Indicadores de gestión de solicitudes, tiempos de atención y plazos normativos</p>
         </div>
         <span class="inline-flex items-center text-xs bg-emerald-50 text-emerald-700 font-medium px-3 py-1 rounded-full border border-emerald-200 w-fit">
-          <i class="fa-solid fa-circle text-[8px] mr-1.5 text-emerald-500 animate-pulse"></i> Matriz Sincronizada en Vivo
+          <i class="fa-solid fa-circle text-[8px] mr-1.5 text-emerald-500 animate-pulse"></i> Matriz Completa Cargada
         </span>
       </div>
 
@@ -128,7 +129,7 @@
             <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-folder-open"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-saip">0</div>
-          <p class="text-xs text-slate-400 mt-1">Registradas en la matriz</p>
+          <p class="text-xs text-slate-400 mt-1">Registros mapeados en total</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -195,8 +196,8 @@
   </main>
 
   <script>
-    // URL que consulta toda la hoja de Google Sheets completa en CSV (sin importar los filtros del usuario en la hoja)
-    const SAIP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/10dbxxD902fn7seizSeShVYtOiZQc1KCFBPpnbmo7tCU/gviz/tq?tqx=out:csv';
+    // Endpoint directo de exportación CSV (ignora filtros y vistas creadas por los usuarios en la hoja)
+    const SAIP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/10dbxxD902fn7seizSeShVYtOiZQc1KCFBPpnbmo7tCU/export?format=csv';
 
     let rawSaipData = [];
     let chartPlazosObj = null;
@@ -225,8 +226,16 @@
       Papa.parse(SAIP_SHEET_URL, {
         download: true,
         header: true,
+        skipEmptyLines: true,
         complete: function(results) {
-          rawSaipData = results.data;
+          // Filtrar únicamente filas que tengan un número o ticket real registrado para no contar filas en blanco
+          rawSaipData = results.data.filter(row => {
+            const hasNro = row['NRO'] && row['NRO'].trim() !== '';
+            const hasTicket = row['TICKET'] && row['TICKET'].trim() !== '';
+            const hasFecha = row['FECHA INGRESO'] && row['FECHA INGRESO'].trim() !== '';
+            return hasNro || hasTicket || hasFecha;
+          });
+
           applyFilters();
         },
         error: function(err) {
@@ -240,16 +249,17 @@
       const selectedMonth = document.getElementById('filterMonth').value;
 
       let filtered = rawSaipData.filter(row => {
-        if(!row['FECHA INGRESO']) return false;
-        
-        const parts = row['FECHA INGRESO'].split('/');
-        if(parts.length < 3) return false;
-        
+        const fechaStr = row['FECHA INGRESO'];
+        if (!fechaStr) return selectedYear === 'ALL' && selectedMonth === 'ALL';
+
+        const parts = fechaStr.split('/');
+        if (parts.length < 3) return true; // Si la fecha está en otro formato pero existe la fila, incluirla si es filtro ALL
+
         const month = parts[1].padStart(2, '0');
         const year = parts[2].trim();
 
-        if(selectedYear !== 'ALL' && year !== selectedYear) return false;
-        if(selectedMonth !== 'ALL' && month !== selectedMonth) return false;
+        if (selectedYear !== 'ALL' && year !== selectedYear) return false;
+        if (selectedMonth !== 'ALL' && month !== selectedMonth) return false;
 
         return true;
       });
@@ -266,22 +276,32 @@
       let modalidades = {};
 
       data.forEach(r => {
+        // Normalizar Estado de Plazo
         const estado = (r['ATENCION PLAZO'] || '').toUpperCase().trim();
-        if(estado.includes('EN PLAZO') || estado.includes('ATENDIDO')) enPlazo++;
-        if(estado.includes('FUERA')) fueraPlazo++;
-
-        const dias = parseInt(r['DIAS TRANSCURRIDOS']);
-        if(!isNaN(dias)) {
-          totalDias += dias;
-          countDias++;
+        if (estado.includes('EN PLAZO') || estado === 'ATENDIDO') {
+          enPlazo++;
+        } else if (estado.includes('FUERA')) {
+          fueraPlazo++;
         }
 
-        const mod = (r['MODALIDAD DE INGRESO'] || 'Otros').trim();
-        if(mod) {
+        // Días Transcurridos
+        const diasVal = r['DIAS TRANSCURRIDOS'];
+        if (diasVal !== undefined && diasVal !== '') {
+          const dias = parseInt(diasVal);
+          if (!isNaN(dias)) {
+            totalDias += dias;
+            countDias++;
+          }
+        }
+
+        // Modalidad
+        let mod = (r['MODALIDAD DE INGRESO'] || 'OTROS').trim().toUpperCase();
+        if (mod) {
           modalidades[mod] = (modalidades[mod] || 0) + 1;
         }
       });
 
+      // Actualizar los KPIs en pantalla
       document.getElementById('kpi-total-saip').innerText = total;
       document.getElementById('kpi-plazo-saip').innerText = enPlazo;
       document.getElementById('kpi-fueraplazo-saip').innerText = fueraPlazo;
@@ -299,13 +319,13 @@
 
     function renderCharts(enPlazo, fueraPlazo, otros, modalidades) {
       const ctx1 = document.getElementById('chartPlazos').getContext('2d');
-      if(chartPlazosObj) chartPlazosObj.destroy();
+      if (chartPlazosObj) chartPlazosObj.destroy();
       chartPlazosObj = new Chart(ctx1, {
         type: 'doughnut',
         data: {
-          labels: ['En Plazo', 'Fuera de Plazo', 'En Proceso / Otros'],
+          labels: ['En Plazo', 'Fuera de Plazo', 'En Proceso / Pendientes'],
           datasets: [{
-            data: [enPlazo, fueraPlazo, otros],
+            data: [enPlazo, fueraPlazo, Math.max(0, otros)],
             backgroundColor: ['#10b981', '#f43f5e', '#cbd5e1']
           }]
         },
@@ -313,7 +333,7 @@
       });
 
       const ctx2 = document.getElementById('chartModalidad').getContext('2d');
-      if(chartModalidadObj) chartModalidadObj.destroy();
+      if (chartModalidadObj) chartModalidadObj.destroy();
       chartModalidadObj = new Chart(ctx2, {
         type: 'bar',
         data: {
