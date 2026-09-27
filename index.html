@@ -66,7 +66,7 @@
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
           <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Acceso a la Información Pública (SAIP)</h2>
-          <p class="text-xs text-slate-500">Indicadores de gestión, plazos normativos y unidades derivadas</p>
+          <p class="text-xs text-slate-500">Indicadores de gestión, plazos normativos (10 días hábiles) y unidades derivadas</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
@@ -138,11 +138,11 @@
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
           <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
-            <span>Prom. Días Atención</span>
+            <span>Prom. Días Hábiles</span>
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-dias-saip">0</div>
-          <p class="text-xs text-slate-400 mt-1">Días transcurridos promedio</p>
+          <p class="text-xs text-slate-400 mt-1">Días hábiles promedio de atención</p>
         </div>
       </div>
 
@@ -257,6 +257,7 @@
     let currentExportData = [];
     let chartPlazosObj = null;
     let chartModalidadObj = null;
+    let feriadosSet = new Set(); // Guardará las fechas en YYYY-MM-DD extraídas de la columna AY
 
     document.addEventListener("DOMContentLoaded", () => {
       fetchData();
@@ -288,6 +289,9 @@
             return values && values.trim() !== '';
           });
 
+          // Extraer la lista de feriados desde la columna AY
+          extractFeriados(results.data);
+
           applyFiltersSaip();
         },
         error: function(err) {
@@ -296,7 +300,6 @@
       });
     }
 
-    // Búsqueda flexible de columnas sin importar variaciones de nombre
     function getFieldValue(row, possibleKeys) {
       const keys = Object.keys(row);
       for (let pKey of possibleKeys) {
@@ -309,7 +312,6 @@
       return '';
     }
 
-    // Parser seguro para fechas en formato peruano (DD/MM/YYYY)
     function parseDatePeruvian(dateStr) {
       if (!dateStr || typeof dateStr !== 'string') return null;
       let clean = dateStr.trim();
@@ -326,6 +328,66 @@
       if (month < 0 || month > 11 || day < 1 || day > 31) return null;
 
       return new Date(year, month, day);
+    }
+
+    function formatDateToKey(d) {
+      if (!d) return '';
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    // Carga los feriados dinámicamente desde la Columna AY de la hoja
+    function extractFeriados(data) {
+      feriadosSet.clear();
+      data.forEach(row => {
+        const valAY = getFieldValue(row, ['FERIADOS', 'FERIADO', 'AY']);
+        if (valAY) {
+          const dt = parseDatePeruvian(valAY);
+          if (dt) feriadosSet.add(formatDateToKey(dt));
+        }
+      });
+    }
+
+    function isBusinessDay(date) {
+      const dayOfWeek = date.getDay(); // 0: Domingo, 6: Sábado
+      if (dayOfWeek === 0 || dayOfWeek === 6) return false;
+
+      const dateKey = formatDateToKey(date);
+      if (feriadosSet.has(dateKey)) return false;
+
+      return true;
+    }
+
+    // Calcula exactamente los 10 DÍAS HÁBILES desde el día siguiente al ingreso
+    function calculateVencimiento10DiasHabiles(dtIngreso) {
+      let current = new Date(dtIngreso.getTime());
+      let counted = 0;
+
+      while (counted < 10) {
+        current.setDate(current.getDate() + 1);
+        if (isBusinessDay(current)) {
+          counted++;
+        }
+      }
+      return current;
+    }
+
+    // Cuenta cuántos días hábiles transcurrieron entre dos fechas
+    function countBusinessDaysBetween(dtInicio, dtFin) {
+      if (dtFin < dtInicio) return 0;
+      let current = new Date(dtInicio.getTime());
+      current.setDate(current.getDate() + 1); // Empieza a contar al día siguiente
+      let businessDays = 0;
+
+      while (current <= dtFin) {
+        if (isBusinessDay(current)) {
+          businessDays++;
+        }
+        current.setDate(current.getDate() + 1);
+      }
+      return businessDays;
     }
 
     function applyFiltersSaip() {
@@ -356,7 +418,7 @@
       let enPlazo = 0;
       let fueraPlazo = 0;
       let pendientes = 0;
-      let totalDias = 0;
+      let totalDiasHabiles = 0;
       let countDias = 0;
       let modalidades = {};
       let areasConsolidadas = {};
@@ -364,16 +426,21 @@
       const hoy = new Date();
 
       data.forEach(r => {
-        // Mapeo exacto: Columna N (Ingreso), Columna U (Vencimiento) y Columna V (Fecha de Atención)
+        // Columna N (Ingreso), Columna U (Vencimiento) y Columna V (Atención)
         const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso']);
         const fechaVencimientoStr = getFieldValue(r, ['Plazo de vencimiento', 'PLAZO DE VENCIMIENTO', 'Plazo vencimiento']);
-        const fechaAtencionStr = getFieldValue(r, ['Fecha de atención', 'FECHA DE ATENCIÓN', 'Fecha de atencion', 'FECHA DE ATENCION', 'Fecha atencion']);
+        const fechaAtencionStr = getFieldValue(r, ['Fecha de atención', 'FECHA DE ATENCIÓN', 'Fecha de atencion', 'FECHA DE ATENCION', 'Fecha atencion', 'Fecha de entrega', 'FECHA DE ENTREGA']);
 
         const dtIngreso = parseDatePeruvian(fechaIngresoStr);
-        const dtVencimiento = parseDatePeruvian(fechaVencimientoStr);
+        let dtVencimiento = parseDatePeruvian(fechaVencimientoStr);
         const dtAtencion = parseDatePeruvian(fechaAtencionStr);
 
-        // 1. Evaluación de Cumplimiento de Plazo (Columna V vs Columna U)
+        // Si la celda U no tiene fecha fija, se calcula automáticamente los 10 días hábiles
+        if (!dtVencimiento && dtIngreso) {
+          dtVencimiento = calculateVencimiento10DiasHabiles(dtIngreso);
+        }
+
+        // 1. Evaluación de Plazo
         if (dtVencimiento) {
           if (dtAtencion) {
             if (dtAtencion <= dtVencimiento) {
@@ -382,11 +449,10 @@
               fueraPlazo++;
             }
           } else {
-            // Sin Fecha de Atención registrada aún
             if (hoy > dtVencimiento) {
-              fueraPlazo++; // Solicitud vencida
+              fueraPlazo++; // Vencida
             } else {
-              pendientes++; // Solicitud pendiente en plazo
+              pendientes++; // Pendiente en plazo
             }
           }
         } else {
@@ -400,18 +466,14 @@
           }
         }
 
-        // 2. Cálculo del Promedio de Días (Fecha de Atención - Fecha de Ingreso)
+        // 2. Conteo de Días Hábiles Promedio (Atención - Ingreso)
         if (dtIngreso && dtAtencion) {
-          const diffTime = dtAtencion - dtIngreso;
-          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-          // Filtro para incluir solo cálculos válidos de días
-          if (!isNaN(diffDays) && diffDays >= 0 && diffDays <= 120) {
-            totalDias += diffDays;
-            countDias++;
-          }
+          const diasHabiles = countBusinessDaysBetween(dtIngreso, dtAtencion);
+          totalDiasHabiles += diasHabiles;
+          countDias++;
         }
 
-        // 3. Modalidad de Ingreso
+        // 3. Modalidades
         let mod = getFieldValue(r, ['Origen de la solicitud', 'ORIGEN DE LA SOLICITUD', 'MODALIDAD DE INGRESO', 'Modalidad de ingreso']).toUpperCase();
         if (!mod) mod = 'OTROS';
         modalidades[mod] = (modalidades[mod] || 0) + 1;
@@ -438,12 +500,12 @@
       document.getElementById('kpi-plazo-saip').innerText = enPlazo;
       document.getElementById('kpi-fueraplazo-saip').innerText = fueraPlazo;
 
-      const pPlazo = total > 0 ? ((enPlazo / total) * 100).toFixed(1) : 0;
-      const pFuera = total > 0 ? ((fueraPlazo / total) * 100).toFixed(1) : 0;
+      const pPlazo = total > 0 ? ((enPlazo / total) * 100).toFixed(1) : '0.0';
+      const pFuera = total > 0 ? ((fueraPlazo / total) * 100).toFixed(1) : '0.0';
       document.getElementById('kpi-plazo-percent').innerText = `${pPlazo}% cumplimiento`;
       document.getElementById('kpi-fueraplazo-percent').innerText = `${pFuera}% del total`;
 
-      const avgDias = countDias > 0 ? (totalDias / countDias).toFixed(1) : '0';
+      const avgDias = countDias > 0 ? (totalDiasHabiles / countDias).toFixed(1) : '0';
       document.getElementById('kpi-dias-saip').innerText = avgDias;
 
       renderCharts(enPlazo, fueraPlazo, pendientes, modalidades);
