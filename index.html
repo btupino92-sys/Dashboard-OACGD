@@ -9,6 +9,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js DataLabels Plugin (Para mostrar números dentro de las secciones del gráfico) -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
   <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <!-- SheetJS (XLSX) -->
@@ -259,6 +261,9 @@
     let chartModalidadObj = null;
     let feriadosSet = new Set();
 
+    // Registrar el plugin de datalabels en Chart.js
+    Chart.register(ChartDataLabels);
+
     document.addEventListener("DOMContentLoaded", () => {
       fetchData();
     });
@@ -406,7 +411,6 @@
       let areasConsolidadas = {};
 
       data.forEach(r => {
-        // Columna N (Ingreso), Columna W (Días de Atención), Columna X (Atención en Plazo), Columna AA (Fecha Notificación)
         const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso']);
         const fechaNotificacionStr = getFieldValue(r, ['Fecha de Notificación', 'FECHA DE NOTIFICACIÓN', 'Fecha de notificacion', 'FECHA DE NOTIFICACION', 'Fecha Notificacion', 'NOTIFICACIÓN POR CORREO', 'NOTIFICACION POR CORREO']);
         const valorColumnaX = getFieldValue(r, ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ATENCION PLAZO', 'Atención plazo', 'Estado', 'ESTADO']).toUpperCase();
@@ -416,13 +420,11 @@
         const dtNotificacion = parseDatePeruvian(fechaNotificacionStr);
 
         // 1. EVALUACIÓN DE CUMPLIMIENTO DE PLAZO
-        // Regla: Prioridad Columna X
         if (valorColumnaX.includes('EN PLAZO') || valorColumnaX.includes('ATENDIDO EN PLAZO')) {
           enPlazo++;
         } else if (valorColumnaX.includes('FUERA DE PLAZO') || valorColumnaX.includes('FUERA')) {
           fueraPlazo++;
         } else {
-          // Regla de respaldo: Si Columna X está vacía, se comparan Columna N (Ingreso) y Columna AA (Notificación)
           if (dtIngreso && dtNotificacion) {
             const diasHabiles = countBusinessDaysBetween(dtIngreso, dtNotificacion);
             if (diasHabiles <= 10) {
@@ -443,7 +445,6 @@
             countDiasColW++;
           }
         } else if (dtIngreso && dtNotificacion) {
-          // Respaldo para el promedio si Columna W no contiene valor en esa fila
           const diasHabiles = countBusinessDaysBetween(dtIngreso, dtNotificacion);
           if (diasHabiles >= 0) {
             sumDiasAtencionColW += diasHabiles;
@@ -491,6 +492,8 @@
     }
 
     function renderCharts(enPlazo, fueraPlazo, pendientes, modalidades) {
+      const totalPie = enPlazo + fueraPlazo + Math.max(0, pendientes);
+
       const ctx1 = document.getElementById('chartPlazos').getContext('2d');
       if (chartPlazosObj) chartPlazosObj.destroy();
       chartPlazosObj = new Chart(ctx1, {
@@ -502,7 +505,25 @@
             backgroundColor: ['#10b981', '#f43f5e', '#cbd5e1']
           }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            datalabels: {
+              color: '#ffffff',
+              font: {
+                weight: 'bold',
+                size: 13
+              },
+              formatter: (value) => {
+                if (value === 0 || value === null) return '';
+                const pct = totalPie > 0 ? ((value / totalPie) * 100).toFixed(1) : 0;
+                return `${value}\n(${pct}%)`;
+              },
+              textAlign: 'center'
+            }
+          }
+        }
       });
 
       const ctx2 = document.getElementById('chartModalidad').getContext('2d');
@@ -521,7 +542,16 @@
         options: { 
           responsive: true, 
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } }
+          plugins: { 
+            legend: { display: false },
+            datalabels: {
+              anchor: 'end',
+              align: 'start',
+              color: '#ffffff',
+              font: { weight: 'bold', size: 12 },
+              formatter: (val) => val > 0 ? val : ''
+            }
+          }
         }
       });
     }
