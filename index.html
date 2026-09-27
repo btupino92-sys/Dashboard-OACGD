@@ -3,79 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard General de Gestión - OACGD</title>
+  <title>Dashboard OACGD - MIMP</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- PapaParse para leer CSVs de Google Sheets -->
+  <!-- PapaParse para procesar CSV -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-  <!-- FontAwesome -->
+  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
-    .active-tab { border-bottom: 3px solid #1e40af; color: #1e40af; font-weight: 600; }
+    .active-tab { border-bottom: 3px solid #1e40af; color: #1e40af; font-weight: 700; background-color: #f8fafc; }
   </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800">
+<body class="bg-slate-100 font-sans text-slate-800">
 
   <!-- Header Institucional -->
-  <header class="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-      <div class="flex items-center gap-3">
-        <i class="fa-solid fa-chart-line text-2xl text-blue-300"></i>
-        <div>
-          <h1 class="text-xl font-bold leading-tight">Panel de Control General y Gestión Institucional</h1>
-          <p class="text-xs text-blue-200">Monitoreo de Matrices Operativas en Tiempo Real</p>
-        </div>
+  <header class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50">
+    <!-- Banner de Logos y Título -->
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+      
+      <!-- Logo Izquierda: MIMP -->
+      <div class="flex items-center">
+        <img src="https://i.postimg.cc/tg2LpgFH/PCM-MIMP.png" alt="Logo MIMP" class="h-12 md:h-14 object-contain">
       </div>
 
-      <!-- Filtros Globales -->
-      <div class="flex items-center gap-3 bg-blue-950/60 p-2 rounded-lg border border-blue-700/50">
-        <div>
-          <label class="block text-[10px] uppercase text-blue-300 font-semibold">Año</label>
-          <select id="filterYear" onchange="applyFilters()" class="bg-blue-900 text-white text-sm rounded px-2 py-1 outline-none border border-blue-700">
-            <option value="ALL">Todos</option>
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-          </select>
+      <!-- Título Central de la Oficina -->
+      <div class="text-center">
+        <h1 class="text-base md:text-xl font-bold text-slate-900 uppercase tracking-tight">
+          Dashboard de la Oficina de Atención a la Ciudadanía y Gestión Documental
+        </h1>
+        <p class="text-xs text-slate-500 font-medium">Monitoreo y Seguimiento Consolidado en Tiempo Real</p>
+      </div>
+
+      <!-- Logo Derecha: Perú Responde -->
+      <div class="flex items-center">
+        <img src="https://i.postimg.cc/VND3mNXQ/Logo-Peru-Responde-Logo-horizontal-(1).png" alt="Logo Perú Responde" class="h-10 md:h-12 object-contain">
+      </div>
+
+    </div>
+
+    <!-- Barra de Filtros Globales y Acciones -->
+    <div class="bg-slate-900 text-white border-t border-slate-800 py-2.5 px-4">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
+        
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-slate-300 uppercase tracking-wider text-[11px]"><i class="fa-solid fa-filter mr-1 text-blue-400"></i> Filtros Globales:</span>
         </div>
-        <div>
-          <label class="block text-[10px] uppercase text-blue-300 font-semibold">Mes</label>
-          <select id="filterMonth" onchange="applyFilters()" class="bg-blue-900 text-white text-sm rounded px-2 py-1 outline-none border border-blue-700">
-            <option value="ALL">Todos</option>
-            <option value="01">Enero</option>
-            <option value="02">Febrero</option>
-            <option value="03">Marzo</option>
-            <option value="04">Abril</option>
-            <option value="05">Mayo</option>
-            <option value="06">Junio</option>
-            <option value="07">Julio</option>
-            <option value="08">Agosto</option>
-            <option value="09">Setiembre</option>
-            <option value="10">Octubre</option>
-            <option value="11">Noviembre</option>
-            <option value="12">Diciembre</option>
-          </select>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-1.5">
+            <label class="text-slate-300">Año:</label>
+            <select id="filterYear" onchange="applyFilters()" class="bg-slate-800 text-white rounded px-2.5 py-1 border border-slate-700 outline-none focus:border-blue-500">
+              <option value="ALL">Todos los Años</option>
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <label class="text-slate-300">Mes:</label>
+            <select id="filterMonth" onchange="applyFilters()" class="bg-slate-800 text-white rounded px-2.5 py-1 border border-slate-700 outline-none focus:border-blue-500">
+              <option value="ALL">Todos los Meses</option>
+              <option value="01">Enero</option>
+              <option value="02">Febrero</option>
+              <option value="03">Marzo</option>
+              <option value="04">Abril</option>
+              <option value="05">Mayo</option>
+              <option value="06">Junio</option>
+              <option value="07">Julio</option>
+              <option value="08">Agosto</option>
+              <option value="09">Setiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+          </div>
+
+          <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded transition font-medium flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate"></i> Actualizar Datos
+          </button>
         </div>
-        <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-2 rounded transition flex items-center gap-1 mt-3">
-          <i class="fa-solid fa-rotate"></i> Actualizar
-        </button>
+
       </div>
     </div>
 
-    <!-- Navegación por Pestañas / Áreas -->
-    <nav class="bg-white border-b border-slate-200 text-slate-600 text-sm">
-      <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-6">
-        <button onclick="switchTab('resumen')" id="tab-resumen" class="py-3 px-2 active-tab whitespace-nowrap"><i class="fa-solid fa-gauge mr-2"></i>Consolidado General</button>
-        <button onclick="switchTab('saip')" id="tab-saip" class="py-3 px-2 whitespace-nowrap"><i class="fa-solid fa-file-invoice mr-2"></i>Acceso a la Información (SAIP)</button>
-        <button onclick="switchTab('atencion')" id="tab-atencion" class="py-3 px-2 whitespace-nowrap"><i class="fa-solid fa-headset mr-2"></i>Atención a la Ciudadanía</button>
-        <button onclick="switchTab('mesapartes')" id="tab-mesapartes" class="py-3 px-2 whitespace-nowrap"><i class="fa-solid fa-envelope-open-text mr-2"></i>Mesa de Partes</button>
-        <button onclick="switchTab('archivo')" id="tab-archivo" class="py-3 px-2 whitespace-nowrap"><i class="fa-solid fa-box-archive mr-2"></i>Archivo Central</button>
-        <button onclick="switchTab('cendoc')" id="tab-cendoc" class="py-3 px-2 whitespace-nowrap"><i class="fa-solid fa-book-bookmark mr-2"></i>CENDOC</button>
-        <button onclick="switchTab('admin')" id="tab-admin" class="py-3 px-2 whitespace-nowrap"><i class="fa-solid fa-building-user mr-2"></i>Área Administrativa</button>
+    <!-- Navegación por Áreas / Pestañas -->
+    <nav class="bg-white border-b border-slate-200 text-slate-600 text-xs md:text-sm">
+      <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-2 md:space-x-4">
+        <button onclick="switchTab('resumen')" id="tab-resumen" class="py-3 px-3 active-tab border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-chart-pie mr-1.5 text-blue-600"></i>Consolidado General</button>
+        <button onclick="switchTab('saip')" id="tab-saip" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-file-shield mr-1.5 text-blue-600"></i>Acceso a la Información (SAIP)</button>
+        <button onclick="switchTab('atencion')" id="tab-atencion" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-headset mr-1.5 text-slate-400"></i>Atención a la Ciudadanía</button>
+        <button onclick="switchTab('mesapartes')" id="tab-mesapartes" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-envelope-open-text mr-1.5 text-slate-400"></i>Mesa de Partes</button>
+        <button onclick="switchTab('archivo')" id="tab-archivo" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-box-archive mr-1.5 text-slate-400"></i>Archivo Central</button>
+        <button onclick="switchTab('cendoc')" id="tab-cendoc" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-book-bookmark mr-1.5 text-slate-400"></i>CENDOC</button>
+        <button onclick="switchTab('admin')" id="tab-admin" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-building-user mr-1.5 text-slate-400"></i>Área Administrativa</button>
       </div>
     </nav>
   </header>
@@ -85,46 +110,51 @@
 
     <!-- SECCIÓN: ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) -->
     <section id="sec-saip" class="space-y-6">
-      <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold text-slate-800">Matriz de Acceso a la Información Pública (SAIP)</h2>
-        <span class="text-xs bg-emerald-100 text-emerald-800 font-medium px-2.5 py-1 rounded-full"><i class="fa-solid fa-circle text-[8px] mr-1 text-emerald-500"></i> Google Sheets Conectado</span>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Matriz de Acceso a la Información Pública (SAIP)</h2>
+          <p class="text-xs text-slate-500">Indicadores de gestión de solicitudes, tiempos de atención y plazos normativos</p>
+        </div>
+        <span class="inline-flex items-center text-xs bg-emerald-50 text-emerald-700 font-medium px-3 py-1 rounded-full border border-emerald-200 w-fit">
+          <i class="fa-solid fa-circle text-[8px] mr-1.5 text-emerald-500 animate-pulse"></i> Matriz Sincronizada en Vivo
+        </span>
       </div>
 
       <!-- Tarjetas KPI -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
-          <div class="flex justify-between items-center text-slate-500 text-sm font-medium">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
             <span>Total Solicitudes</span>
-            <i class="fa-solid fa-folder-open text-blue-600"></i>
+            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-folder-open"></i></div>
           </div>
-          <div class="text-3xl font-bold text-slate-900 mt-2" id="kpi-total-saip">0</div>
-          <p class="text-xs text-slate-400 mt-1">Registradas en el periodo</p>
+          <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-saip">0</div>
+          <p class="text-xs text-slate-400 mt-1">Registradas en la matriz</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
-          <div class="flex justify-between items-center text-slate-500 text-sm font-medium">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
             <span>Atendidas en Plazo</span>
-            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-circle-check"></i></div>
           </div>
-          <div class="text-3xl font-bold text-emerald-600 mt-2" id="kpi-plazo-saip">0</div>
-          <p class="text-xs text-emerald-600 mt-1 font-medium" id="kpi-plazo-percent">0% cumplimiento</p>
+          <div class="text-3xl font-extrabold text-emerald-600 mt-2" id="kpi-plazo-saip">0</div>
+          <p class="text-xs text-emerald-600 mt-1 font-semibold" id="kpi-plazo-percent">0% cumplimiento</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
-          <div class="flex justify-between items-center text-slate-500 text-sm font-medium">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
             <span>Fuera de Plazo</span>
-            <i class="fa-solid fa-triangle-exclamation text-rose-600"></i>
+            <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation"></i></div>
           </div>
-          <div class="text-3xl font-bold text-rose-600 mt-2" id="kpi-fueraplazo-saip">0</div>
-          <p class="text-xs text-rose-500 mt-1 font-medium" id="kpi-fueraplazo-percent">0% del total</p>
+          <div class="text-3xl font-extrabold text-rose-600 mt-2" id="kpi-fueraplazo-saip">0</div>
+          <p class="text-xs text-rose-500 mt-1 font-semibold" id="kpi-fueraplazo-percent">0% del total</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
-          <div class="flex justify-between items-center text-slate-500 text-sm font-medium">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
             <span>Prom. Días Atención</span>
-            <i class="fa-solid fa-clock text-amber-600"></i>
+            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
           </div>
-          <div class="text-3xl font-bold text-slate-900 mt-2" id="kpi-dias-saip">0</div>
+          <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-dias-saip">0</div>
           <p class="text-xs text-slate-400 mt-1">Días transcurridos promedio</p>
         </div>
       </div>
@@ -132,39 +162,46 @@
       <!-- Gráficos -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
-          <h3 class="font-bold text-slate-700 text-sm mb-4">Estado de Atención de Plazos</h3>
-          <div class="h-64 flex justify-center">
+          <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-blue-600"></i> Cumplimiento de Plazos Normativos
+          </h3>
+          <div class="h-64 flex justify-center items-center">
             <canvas id="chartPlazos"></canvas>
           </div>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
-          <h3 class="font-bold text-slate-700 text-sm mb-4">Modalidad de Ingreso de Solicitud</h3>
-          <div class="h-64 flex justify-center">
+          <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-chart-column text-blue-600"></i> Solicitudes por Modalidad de Ingreso
+          </h3>
+          <div class="h-64 flex justify-center items-center">
             <canvas id="chartModalidad"></canvas>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- OTRAS SECCIONES (Modulares) -->
+    <!-- PESTAÑA: CONSOLIDADO GENERAL -->
     <section id="sec-resumen" class="hidden space-y-4">
-      <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg text-blue-900">
-        <h3 class="font-bold"><i class="fa-solid fa-circle-info mr-2"></i>Consolidado General de la Oficina</h3>
-        <p class="text-sm mt-1">A medida que vincules los enlaces de Google Sheets de las demás áreas, se consolidarán automáticamente en esta vista principal.</p>
+      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
+        <div class="flex items-center gap-3 text-blue-900 mb-2">
+          <i class="fa-solid fa-circle-info text-xl text-blue-600"></i>
+          <h3 class="font-bold text-base">Consolidado General de la Oficina</h3>
+        </div>
+        <p class="text-sm text-slate-600">A medida que vayamos vinculando las matrices de las demás áreas, los totales generales, tiempos promedios de atención y montos consolidados se integrarán automáticamente en esta vista ejecutiva.</p>
       </div>
     </section>
+
   </main>
 
   <script>
-    // URL de Google Sheet expuesto como CSV para RSAIP
+    // URL que consulta toda la hoja de Google Sheets completa en CSV (sin importar los filtros del usuario en la hoja)
     const SAIP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/10dbxxD902fn7seizSeShVYtOiZQc1KCFBPpnbmo7tCU/gviz/tq?tqx=out:csv';
 
     let rawSaipData = [];
     let chartPlazosObj = null;
     let chartModalidadObj = null;
 
-    // Inicializar
     document.addEventListener("DOMContentLoaded", () => {
       fetchData();
     });
@@ -204,13 +241,12 @@
 
       let filtered = rawSaipData.filter(row => {
         if(!row['FECHA INGRESO']) return false;
-        // Parsing fecha en formato DD/MM/YYYY
+        
         const parts = row['FECHA INGRESO'].split('/');
         if(parts.length < 3) return false;
         
-        const day = parts[0];
-        const month = parts[1];
-        const year = parts[2];
+        const month = parts[1].padStart(2, '0');
+        const year = parts[2].trim();
 
         if(selectedYear !== 'ALL' && year !== selectedYear) return false;
         if(selectedMonth !== 'ALL' && month !== selectedMonth) return false;
@@ -230,48 +266,44 @@
       let modalidades = {};
 
       data.forEach(r => {
-        // Estado de Plazo
         const estado = (r['ATENCION PLAZO'] || '').toUpperCase().trim();
         if(estado.includes('EN PLAZO') || estado.includes('ATENDIDO')) enPlazo++;
         if(estado.includes('FUERA')) fueraPlazo++;
 
-        // Días Transcurridos
         const dias = parseInt(r['DIAS TRANSCURRIDOS']);
         if(!isNaN(dias)) {
           totalDias += dias;
           countDias++;
         }
 
-        // Modalidad
-        const mod = r['MODALIDAD DE INGRESO'] || 'Otros';
-        modalidades[mod] = (modalidades[mod] || 0) + 1;
+        const mod = (r['MODALIDAD DE INGRESO'] || 'Otros').trim();
+        if(mod) {
+          modalidades[mod] = (modalidades[mod] || 0) + 1;
+        }
       });
 
-      // Actualizar tarjetas KPI
       document.getElementById('kpi-total-saip').innerText = total;
       document.getElementById('kpi-plazo-saip').innerText = enPlazo;
       document.getElementById('kpi-fueraplazo-saip').innerText = fueraPlazo;
 
       const pPlazo = total > 0 ? ((enPlazo / total) * 100).toFixed(1) : 0;
       const pFuera = total > 0 ? ((fueraPlazo / total) * 100).toFixed(1) : 0;
-      document.getElementById('kpi-plazo-percent').innerText = `${pPlazo}% del total`;
+      document.getElementById('kpi-plazo-percent').innerText = `${pPlazo}% cumplimiento`;
       document.getElementById('kpi-fueraplazo-percent').innerText = `${pFuera}% del total`;
 
       const avgDias = countDias > 0 ? (totalDias / countDias).toFixed(1) : 0;
       document.getElementById('kpi-dias-saip').innerText = avgDias;
 
-      // Renderizar Gráficos
       renderCharts(enPlazo, fueraPlazo, total - (enPlazo + fueraPlazo), modalidades);
     }
 
     function renderCharts(enPlazo, fueraPlazo, otros, modalidades) {
-      // Donut Chart Plazos
       const ctx1 = document.getElementById('chartPlazos').getContext('2d');
       if(chartPlazosObj) chartPlazosObj.destroy();
       chartPlazosObj = new Chart(ctx1, {
         type: 'doughnut',
         data: {
-          labels: ['En Plazo', 'Fuera de Plazo', 'Otros/Pendientes'],
+          labels: ['En Plazo', 'Fuera de Plazo', 'En Proceso / Otros'],
           datasets: [{
             data: [enPlazo, fueraPlazo, otros],
             backgroundColor: ['#10b981', '#f43f5e', '#cbd5e1']
@@ -280,7 +312,6 @@
         options: { responsive: true, maintainAspectRatio: false }
       });
 
-      // Bar Chart Modalidades
       const ctx2 = document.getElementById('chartModalidad').getContext('2d');
       if(chartModalidadObj) chartModalidadObj.destroy();
       chartModalidadObj = new Chart(ctx2, {
@@ -288,12 +319,17 @@
         data: {
           labels: Object.keys(modalidades),
           datasets: [{
-            label: 'Atenciones por Modalidad',
+            label: 'Cantidad de Solicitudes',
             data: Object.values(modalidades),
-            backgroundColor: '#3b82f6'
+            backgroundColor: '#2563eb',
+            borderRadius: 6
           }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }
       });
     }
   </script>
