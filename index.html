@@ -46,18 +46,40 @@
 
     </div>
 
-    <!-- Barra de Filtros Globales y Acciones -->
-    <div class="bg-slate-900 text-white border-t border-slate-800 py-2.5 px-4">
-      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
-        
-        <div class="flex items-center gap-2">
-          <span class="font-semibold text-slate-300 uppercase tracking-wider text-[11px]"><i class="fa-solid fa-filter mr-1 text-blue-400"></i> Filtros Globales:</span>
+    <!-- Navegación por Áreas / Pestañas -->
+    <nav class="bg-slate-900 border-b border-slate-800 text-slate-300 text-xs md:text-sm">
+      <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-2 md:space-x-4">
+        <button onclick="switchTab('resumen')" id="tab-resumen" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-chart-pie mr-1.5 text-slate-400"></i>Consolidado General</button>
+        <button onclick="switchTab('saip')" id="tab-saip" class="py-3 px-3 active-tab border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-file-shield mr-1.5 text-blue-400"></i>Acceso a la Información (SAIP)</button>
+        <button onclick="switchTab('atencion')" id="tab-atencion" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-headset mr-1.5 text-slate-400"></i>Atención a la Ciudadanía</button>
+        <button onclick="switchTab('mesapartes')" id="tab-mesapartes" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-envelope-open-text mr-1.5 text-slate-400"></i>Mesa de Partes</button>
+        <button onclick="switchTab('archivo')" id="tab-archivo" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-box-archive mr-1.5 text-slate-400"></i>Archivo Central</button>
+        <button onclick="switchTab('cendoc')" id="tab-cendoc" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-book-bookmark mr-1.5 text-slate-400"></i>CENDOC</button>
+        <button onclick="switchTab('admin')" id="tab-admin" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-building-user mr-1.5 text-slate-400"></i>Área Administrativa</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- SECCIÓN: ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) -->
+    <section id="sec-saip" class="space-y-6">
+      
+      <!-- Encabezado con Filtros Independientes del Área -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Acceso a la Información Pública (SAIP)</h2>
+          <p class="text-xs text-slate-500">Indicadores de gestión, plazos normativos y unidades derivadas</p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3">
-          <div class="flex items-center gap-1.5">
-            <label class="text-slate-300">Año:</label>
-            <select id="filterYear" onchange="applyFilters()" class="bg-slate-800 text-white rounded px-2.5 py-1 border border-slate-700 outline-none focus:border-blue-500">
+        <!-- FILTROS INDEPENDIENTES PARA SAIP -->
+        <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+          <span class="font-bold text-slate-700 uppercase tracking-wider text-[10px]"><i class="fa-solid fa-filter text-blue-600 mr-1"></i> Filtro SAIP:</span>
+
+          <div class="flex items-center gap-1">
+            <label class="text-slate-600 font-medium">Año:</label>
+            <select id="filterYearSaip" onchange="applyFiltersSaip()" class="bg-white text-slate-800 rounded px-2 py-1 border border-slate-300 outline-none focus:border-blue-600 font-medium">
               <option value="ALL" selected>Todos los Años</option>
               <option value="2026">2026</option>
               <option value="2025">2025</option>
@@ -65,9 +87,9 @@
             </select>
           </div>
 
-          <div class="flex items-center gap-1.5">
-            <label class="text-slate-300">Mes:</label>
-            <select id="filterMonth" onchange="applyFilters()" class="bg-slate-800 text-white rounded px-2.5 py-1 border border-slate-700 outline-none focus:border-blue-500">
+          <div class="flex items-center gap-1">
+            <label class="text-slate-600 font-medium">Mes:</label>
+            <select id="filterMonthSaip" onchange="applyFiltersSaip()" class="bg-white text-slate-800 rounded px-2 py-1 border border-slate-300 outline-none focus:border-blue-600 font-medium">
               <option value="ALL" selected>Todos los Meses</option>
               <option value="01">Enero</option>
               <option value="02">Febrero</option>
@@ -84,41 +106,10 @@
             </select>
           </div>
 
-          <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded transition font-medium flex items-center gap-1.5">
-            <i class="fa-solid fa-rotate"></i> Actualizar Datos
+          <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition font-medium flex items-center gap-1">
+            <i class="fa-solid fa-rotate"></i> Actualizar
           </button>
         </div>
-
-      </div>
-    </div>
-
-    <!-- Navegación por Áreas / Pestañas -->
-    <nav class="bg-white border-b border-slate-200 text-slate-600 text-xs md:text-sm">
-      <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-2 md:space-x-4">
-        <button onclick="switchTab('resumen')" id="tab-resumen" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-chart-pie mr-1.5 text-slate-400"></i>Consolidado General</button>
-        <button onclick="switchTab('saip')" id="tab-saip" class="py-3 px-3 active-tab border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-file-shield mr-1.5 text-blue-600"></i>Acceso a la Información (SAIP)</button>
-        <button onclick="switchTab('atencion')" id="tab-atencion" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-headset mr-1.5 text-slate-400"></i>Atención a la Ciudadanía</button>
-        <button onclick="switchTab('mesapartes')" id="tab-mesapartes" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-envelope-open-text mr-1.5 text-slate-400"></i>Mesa de Partes</button>
-        <button onclick="switchTab('archivo')" id="tab-archivo" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-box-archive mr-1.5 text-slate-400"></i>Archivo Central</button>
-        <button onclick="switchTab('cendoc')" id="tab-cendoc" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-book-bookmark mr-1.5 text-slate-400"></i>CENDOC</button>
-        <button onclick="switchTab('admin')" id="tab-admin" class="py-3 px-3 border-b-2 border-transparent hover:text-blue-900 transition whitespace-nowrap"><i class="fa-solid fa-building-user mr-1.5 text-slate-400"></i>Área Administrativa</button>
-      </div>
-    </nav>
-  </header>
-
-  <!-- Contenido Principal -->
-  <main class="max-w-7xl mx-auto px-4 py-6">
-
-    <!-- SECCIÓN: ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) -->
-    <section id="sec-saip" class="space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
-        <div>
-          <h2 class="text-lg font-bold text-slate-800">Matriz de Acceso a la Información Pública (SAIP)</h2>
-          <p class="text-xs text-slate-500">Indicadores de gestión de solicitudes, tiempos de atención y derivación a unidades orgánicas</p>
-        </div>
-        <span class="inline-flex items-center text-xs bg-emerald-50 text-emerald-700 font-medium px-3 py-1 rounded-full border border-emerald-200 w-fit">
-          <i class="fa-solid fa-circle text-[8px] mr-1.5 text-emerald-500 animate-pulse"></i> Sincronizado con Google Sheets
-        </span>
       </div>
 
       <!-- Tarjetas KPI -->
@@ -129,7 +120,7 @@
             <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-folder-open"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-saip">0</div>
-          <p class="text-xs text-slate-400 mt-1">Registros mapeados en total</p>
+          <p class="text-xs text-slate-400 mt-1">Registros mapeados en el filtro</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -181,24 +172,30 @@
         </div>
       </div>
 
-      <!-- TABLA DE CONSOLIDADO DE ÁREAS Y TIPO DE MOVIMIENTO -->
+      <!-- TABLA DE CONSOLIDADO DE ÁREAS CON EXPORTACIÓN A EXCEL -->
       <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
               <i class="fa-solid fa-sitemap text-blue-600"></i> Consolidado de Áreas y Movimiento de Documentos
             </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Sincronizado dinámicamente con los filtros de Año y Mes del Panel Superior</p>
+            <p class="text-xs text-slate-500 mt-0.5">Sincronizado con los Filtros Independientes de SAIP</p>
           </div>
 
-          <!-- Buscador interno -->
-          <div class="relative">
-            <input type="text" id="searchArea" onkeyup="filterTableArea()" placeholder="Buscar Área o Detalle..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-blue-500 w-full sm:w-64">
-            <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-2.5 top-2.5"></i>
+          <!-- Acciones de Búsqueda y Exportación -->
+          <div class="flex items-center gap-2">
+            <button onclick="exportSaipToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-file-excel"></i> Exportar a Excel
+            </button>
+
+            <div class="relative">
+              <input type="text" id="searchArea" onkeyup="filterTableArea()" placeholder="Buscar Área o Detalle..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-blue-500 w-full sm:w-56">
+              <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-2.5 top-2.5"></i>
+            </div>
           </div>
         </div>
 
-        <!-- Tabla Responsive con Footer para Total -->
+        <!-- Tabla Responsive -->
         <div class="overflow-x-auto max-h-96">
           <table class="w-full text-left text-xs border-collapse" id="tableAreas">
             <thead>
@@ -217,7 +214,7 @@
             <tfoot class="bg-slate-900 text-white font-bold text-xs sticky bottom-0 z-10 border-t-2 border-slate-700">
               <tr>
                 <td colspan="4" class="py-3 px-3 uppercase tracking-wider text-right">
-                  <i class="fa-solid fa-calculator mr-1.5 text-blue-400"></i> Total Documentos Mapeados (Filtro Actual):
+                  <i class="fa-solid fa-calculator mr-1.5 text-blue-400"></i> Total Documentos Mapeados (Filtro SAIP):
                 </td>
                 <td class="py-3 px-3 text-center text-sm font-extrabold text-blue-300 bg-slate-800" id="tfoot-total-docs">0</td>
                 <td class="py-3 px-3 text-right text-emerald-400 font-bold" id="tfoot-total-pct">100%</td>
@@ -252,6 +249,7 @@
     };
 
     let rawSaipData = [];
+    let currentExportData = []; // Datos acumulados para exportar a Excel
     let chartPlazosObj = null;
     let chartModalidadObj = null;
 
@@ -287,7 +285,7 @@
             return hasNro || hasTicket || hasFecha;
           });
 
-          applyFilters();
+          applyFiltersSaip();
         },
         error: function(err) {
           console.error("Error al cargar Google Sheet:", err);
@@ -295,9 +293,10 @@
       });
     }
 
-    function applyFilters() {
-      const selectedYear = document.getElementById('filterYear').value;
-      const selectedMonth = document.getElementById('filterMonth').value;
+    // Filtros Independientes para SAIP
+    function applyFiltersSaip() {
+      const selectedYear = document.getElementById('filterYearSaip').value;
+      const selectedMonth = document.getElementById('filterMonthSaip').value;
 
       let filtered = rawSaipData.filter(row => {
         const fechaStr = row['FECHA INGRESO'];
@@ -328,7 +327,6 @@
       let areasConsolidadas = {};
 
       data.forEach(r => {
-        // Estado de Plazo
         const estado = (r['ATENCION PLAZO'] || '').toUpperCase().trim();
         if (estado.includes('EN PLAZO') || estado === 'ATENDIDO') {
           enPlazo++;
@@ -336,7 +334,6 @@
           fueraPlazo++;
         }
 
-        // Días Transcurridos
         const diasVal = r['DIAS TRANSCURRIDOS'];
         if (diasVal !== undefined && diasVal !== '') {
           const dias = parseInt(diasVal);
@@ -346,13 +343,11 @@
           }
         }
 
-        // Modalidad
         let mod = (r['MODALIDAD DE INGRESO'] || 'OTROS').trim().toUpperCase();
         if (mod) {
           modalidades[mod] = (modalidades[mod] || 0) + 1;
         }
 
-        // Mapeo Columna P (AREA) y Columna O (DETALLE)
         let areaNom = (r['AREA'] || 'SIN DERIVAR / NO ESPECIFICA').trim().toUpperCase();
         let detalleAccion = (r['DETALLE'] || 'SIN DETALLE').trim().toUpperCase();
         let fechaStr = r['FECHA INGRESO'] || '';
@@ -371,7 +366,7 @@
         areasConsolidadas[areaKey] = (areasConsolidadas[areaKey] || 0) + 1;
       });
 
-      // Actualizar KPIs del Panel Superior
+      // Actualizar KPIs SAIP
       document.getElementById('kpi-total-saip').innerText = total;
       document.getElementById('kpi-plazo-saip').innerText = enPlazo;
       document.getElementById('kpi-fueraplazo-saip').innerText = fueraPlazo;
@@ -429,6 +424,7 @@
       const tfootTotal = document.getElementById('tfoot-total-docs');
       const tfootPct = document.getElementById('tfoot-total-pct');
       tbody.innerHTML = '';
+      currentExportData = [];
 
       let sortedKeys = Object.keys(areasDict).sort((a, b) => areasDict[b] - areasDict[a]);
 
@@ -447,6 +443,16 @@
         sumaAcumuladaDocs += cantidad;
 
         let pct = totalGeneral > 0 ? ((cantidad / totalGeneral) * 100).toFixed(1) : 0;
+
+        // Guardar para exportación
+        currentExportData.push({
+          NRO: index + 1,
+          AREA: areaName,
+          DETALLE: detalleAccion,
+          PERIODO: mesYear,
+          CANTIDAD: cantidad,
+          PORCENTAJE: `${pct}%`
+        });
 
         let badgeClass = "bg-slate-100 text-slate-700 border-slate-300";
         if (detalleAccion.includes("DERIVADO")) {
@@ -474,7 +480,6 @@
         tbody.appendChild(row);
       });
 
-      // Actualizar Total en Footer de la Tabla
       tfootTotal.innerText = sumaAcumuladaDocs;
       tfootPct.innerText = totalGeneral > 0 ? '100%' : '0%';
     }
@@ -498,6 +503,36 @@
           }
         }
       }
+    }
+
+    // Función de Exportación a CSV / Excel
+    function exportSaipToExcel() {
+      if (currentExportData.length === 0) {
+        alert("No hay datos para exportar.");
+        return;
+      }
+
+      const year = document.getElementById('filterYearSaip').value;
+      const month = document.getElementById('filterMonthSaip').value;
+      const filename = `Consolidado_SAIP_OACGD_${year}_${month}.csv`;
+
+      // Crear encabezados CSV
+      let csvContent = "\uFEFF"; // BOM para compatibilidad con tildes y caracteres en Excel
+      csvContent += "NRO,AREA_UNIDAD_ORGANICA,ACCION_DETALLE,PERIODO,CANTIDAD_DOCUMENTOS,PORCENTAJE_PARTICIPACION\n";
+
+      currentExportData.forEach(r => {
+        csvContent += `"${r.NRO}","${r.AREA}","${r.DETALLE}","${r.PERIODO}","${r.CANTIDAD}","${r.PORCENTAJE}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   </script>
 </body>
