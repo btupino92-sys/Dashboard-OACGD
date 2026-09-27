@@ -181,14 +181,14 @@
         </div>
       </div>
 
-      <!-- TABLA DE CONSOLIDADO DE ÁREAS Y TIPO DE MOVIMIENTO (COLUMNA O) -->
+      <!-- TABLA DE CONSOLIDADO DE ÁREAS Y TIPO DE MOVIMIENTO -->
       <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-sitemap text-blue-600"></i> Consolidado de Áreas y Tipo de Movimiento (Derivado / Encausado / Traslado)
+              <i class="fa-solid fa-sitemap text-blue-600"></i> Consolidado de Áreas y Movimiento de Documentos
             </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Detalle mapeado desde la Columna O (Detalle) y Columna P (Área) por Periodo Mensual</p>
+            <p class="text-xs text-slate-500 mt-0.5">Sincronizado dinámicamente con los filtros de Año y Mes del Panel Superior</p>
           </div>
 
           <!-- Buscador interno -->
@@ -198,7 +198,7 @@
           </div>
         </div>
 
-        <!-- Tabla Responsive -->
+        <!-- Tabla Responsive con Footer para Total -->
         <div class="overflow-x-auto max-h-96">
           <table class="w-full text-left text-xs border-collapse" id="tableAreas">
             <thead>
@@ -214,6 +214,15 @@
             <tbody id="tbody-areas" class="divide-y divide-slate-100 text-slate-700">
               <!-- Carga Dinámica por JS -->
             </tbody>
+            <tfoot class="bg-slate-900 text-white font-bold text-xs sticky bottom-0 z-10 border-t-2 border-slate-700">
+              <tr>
+                <td colspan="4" class="py-3 px-3 uppercase tracking-wider text-right">
+                  <i class="fa-solid fa-calculator mr-1.5 text-blue-400"></i> Total Documentos Mapeados (Filtro Actual):
+                </td>
+                <td class="py-3 px-3 text-center text-sm font-extrabold text-blue-300 bg-slate-800" id="tfoot-total-docs">0</td>
+                <td class="py-3 px-3 text-right text-emerald-400 font-bold" id="tfoot-total-pct">100%</td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
@@ -362,7 +371,7 @@
         areasConsolidadas[areaKey] = (areasConsolidadas[areaKey] || 0) + 1;
       });
 
-      // Actualizar KPIs
+      // Actualizar KPIs del Panel Superior
       document.getElementById('kpi-total-saip').innerText = total;
       document.getElementById('kpi-plazo-saip').innerText = enPlazo;
       document.getElementById('kpi-fueraplazo-saip').innerText = fueraPlazo;
@@ -417,21 +426,28 @@
 
     function renderTableAreas(areasDict, totalGeneral) {
       const tbody = document.getElementById('tbody-areas');
+      const tfootTotal = document.getElementById('tfoot-total-docs');
+      const tfootPct = document.getElementById('tfoot-total-pct');
       tbody.innerHTML = '';
 
       let sortedKeys = Object.keys(areasDict).sort((a, b) => areasDict[b] - areasDict[a]);
 
       if (sortedKeys.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No hay registros de movimientos para el filtro seleccionado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No hay registros de movimientos para el año/mes seleccionado.</td></tr>`;
+        tfootTotal.innerText = '0';
+        tfootPct.innerText = '0%';
         return;
       }
+
+      let sumaAcumuladaDocs = 0;
 
       sortedKeys.forEach((key, index) => {
         let [areaName, detalleAccion, mesYear] = key.split('||');
         let cantidad = areasDict[key];
+        sumaAcumuladaDocs += cantidad;
+
         let pct = totalGeneral > 0 ? ((cantidad / totalGeneral) * 100).toFixed(1) : 0;
 
-        // Estilo de badge según tipo de detalle de columna O
         let badgeClass = "bg-slate-100 text-slate-700 border-slate-300";
         if (detalleAccion.includes("DERIVADO")) {
           badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
@@ -457,6 +473,10 @@
         `;
         tbody.appendChild(row);
       });
+
+      // Actualizar Total en Footer de la Tabla
+      tfootTotal.innerText = sumaAcumuladaDocs;
+      tfootPct.innerText = totalGeneral > 0 ? '100%' : '0%';
     }
 
     function filterTableArea() {
