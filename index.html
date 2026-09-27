@@ -142,7 +142,7 @@
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-dias-saip">0</div>
-          <p class="text-xs text-slate-400 mt-1">Días hábiles / transcurridos promedio</p>
+          <p class="text-xs text-slate-400 mt-1">Días transcurridos promedio</p>
         </div>
       </div>
 
@@ -296,7 +296,7 @@
       });
     }
 
-    // Búsqueda flexible de campos sin importar variaciones de minúsculas/mayúsculas/espacios
+    // Búsqueda flexible de columnas sin importar variaciones de nombre
     function getFieldValue(row, possibleKeys) {
       const keys = Object.keys(row);
       for (let pKey of possibleKeys) {
@@ -309,12 +309,11 @@
       return '';
     }
 
-    // Parser robusto de fechas (formato peruano DD/MM/YYYY)
+    // Parser seguro para fechas en formato peruano (DD/MM/YYYY)
     function parseDatePeruvian(dateStr) {
       if (!dateStr || typeof dateStr !== 'string') return null;
       let clean = dateStr.trim();
 
-      // Extraer solo patrones que parezcan fechas DD/MM/YYYY
       const match = clean.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
       if (!match) return null;
 
@@ -324,8 +323,6 @@
 
       if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
       if (year < 100) year += 2000;
-
-      // Validar rangos coherentes
       if (month < 0 || month > 11 || day < 1 || day > 31) return null;
 
       return new Date(year, month, day);
@@ -367,28 +364,29 @@
       const hoy = new Date();
 
       data.forEach(r => {
-        // Obtención flexible por nombres de columnas alternativos
+        // Mapeo exacto: Columna N (Ingreso), Columna U (Vencimiento) y Columna V (Fecha de Atención)
         const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso']);
         const fechaVencimientoStr = getFieldValue(r, ['Plazo de vencimiento', 'PLAZO DE VENCIMIENTO', 'Plazo vencimiento']);
-        const fechaNotificacionStr = getFieldValue(r, ['Fecha de Notificación', 'FECHA DE NOTIFICACIÓN', 'Fecha de notificacion', 'Fecha Notificacion', 'NOTIFICACIÓN POR CORREO']);
+        const fechaAtencionStr = getFieldValue(r, ['Fecha de atención', 'FECHA DE ATENCIÓN', 'Fecha de atencion', 'FECHA DE ATENCION', 'Fecha atencion']);
 
         const dtIngreso = parseDatePeruvian(fechaIngresoStr);
         const dtVencimiento = parseDatePeruvian(fechaVencimientoStr);
-        const dtNotificacion = parseDatePeruvian(fechaNotificacionStr);
+        const dtAtencion = parseDatePeruvian(fechaAtencionStr);
 
-        // 1. Evaluación de Plazo
+        // 1. Evaluación de Cumplimiento de Plazo (Columna V vs Columna U)
         if (dtVencimiento) {
-          if (dtNotificacion) {
-            if (dtNotificacion <= dtVencimiento) {
+          if (dtAtencion) {
+            if (dtAtencion <= dtVencimiento) {
               enPlazo++;
             } else {
               fueraPlazo++;
             }
           } else {
+            // Sin Fecha de Atención registrada aún
             if (hoy > dtVencimiento) {
-              fueraPlazo++;
+              fueraPlazo++; // Solicitud vencida
             } else {
-              pendientes++;
+              pendientes++; // Solicitud pendiente en plazo
             }
           }
         } else {
@@ -402,18 +400,18 @@
           }
         }
 
-        // 2. Promedio de Días (Solamente registros con Notificación Efectiva para evitar distorsiones)
-        if (dtIngreso && dtNotificacion) {
-          const diffTime = dtNotificacion - dtIngreso;
+        // 2. Cálculo del Promedio de Días (Fecha de Atención - Fecha de Ingreso)
+        if (dtIngreso && dtAtencion) {
+          const diffTime = dtAtencion - dtIngreso;
           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-          // Control de seguridad: solo tomar valores reales (0 a 90 días)
+          // Filtro para incluir solo cálculos válidos de días
           if (!isNaN(diffDays) && diffDays >= 0 && diffDays <= 120) {
             totalDias += diffDays;
             countDias++;
           }
         }
 
-        // 3. Modalidad
+        // 3. Modalidad de Ingreso
         let mod = getFieldValue(r, ['Origen de la solicitud', 'ORIGEN DE LA SOLICITUD', 'MODALIDAD DE INGRESO', 'Modalidad de ingreso']).toUpperCase();
         if (!mod) mod = 'OTROS';
         modalidades[mod] = (modalidades[mod] || 0) + 1;
