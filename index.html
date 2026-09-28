@@ -463,12 +463,11 @@
   </main>
 
   <script>
-    // URLs de exportación CSV (puedes ajustar o usar el mismo ID de hoja separando por gid si son pestañas distintas)
+    // URLs de exportación CSV independientes para el Archivo Central
+    const SERVICIOS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?gid=1324538390&single=true&output=csv';
+    const INFORMES_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?gid=1876631515&single=true&output=csv'; 
+
     const SAIP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/10dbxxD902fn7seizSeShVYtOiZQc1KCFBPpnbmo7tCU/export?format=csv';
-    
-    // URL principal para "servicios" y puedes duplicar/adaptar o unificar si publícas ambas pestañas
-    const SERVICIOS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?output=csv&gid=0';
-    const INFORMES_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?output=csv&gid=123456789'; // Reemplaza gid con el de tu pestaña "servicios informes"
 
     const MESES_NOMBRES = {
       '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril',
@@ -552,42 +551,45 @@
     // 1. ARCHIVO CENTRAL (CARGA Y CONSOLIDACIÓN)
     // ==========================================
     function fetchAllArchivoData() {
-      // Cargamos la pestaña "servicios" (Formulario)
+      // 1. Cargar pestaña "servicios"
       Papa.parse(SERVICIOS_SHEET_URL, {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(resultsServ) {
-          rawServiciosData = resultsServ.data.map(row => {
+          rawServiciosData = (resultsServ.data || []).map(row => {
             row._origenLabel = "SERVICIOS (FORMULARIO)";
             return row;
           }).filter(row => {
             const valId = getFieldValue(row, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
-            return valId !== '' && !isNaN(parseInt(valId, 10));
+            return valId !== '';
           });
 
-          // Cargamos la pestaña "servicios informes" (SGD)
+          // 2. Cargar pestaña "servicios informes"
           Papa.parse(INFORMES_SHEET_URL, {
             download: true,
             header: true,
             skipEmptyLines: true,
             complete: function(resultsInf) {
-              rawInformesData = resultsInf.data.map(row => {
+              rawInformesData = (resultsInf.data || []).map(row => {
                 row._origenLabel = "SGD - INFORMES";
                 return row;
               }).filter(row => {
                 const valId = getFieldValue(row, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
-                return valId !== '' && !isNaN(parseInt(valId, 10));
+                return valId !== '';
               });
 
               applyFiltersArchivo();
             },
             error: function() {
-              // Si falla la segunda URL, procesamos al menos la primera para que no rompa el dashboard
               rawInformesData = [];
               applyFiltersArchivo();
             }
           });
+        },
+        error: function() {
+          rawServiciosData = [];
+          applyFiltersArchivo();
         }
       });
     }
@@ -615,7 +617,6 @@
       let filteredServicios = rawServiciosData.filter(filterLogic);
       let filteredInformes = rawInformesData.filter(filterLogic);
 
-      // Fusionamos ambos conjuntos de datos para el tablero general del Archivo Central
       let combinedData = filteredServicios.concat(filteredInformes);
       updateArchivoDashboard(combinedData);
     }
@@ -631,7 +632,7 @@
       let countTiemposPorDoc = 0;
 
       let condicionesMap = {};
-      let oficinasOrigenMap = {}; // Agrupado por Oficina + Origen para diferenciarlos en la tabla
+      let oficinasOrigenMap = {}; 
       let setServiciosGlobal = new Set();
 
       data.forEach(r => {
@@ -675,7 +676,6 @@
 
         condicionesMap[condicion] = (condicionesMap[condicion] || 0) + 1;
 
-        // Llave única compuesta para diferenciar en la tabla de abajo: Oficina + Origen
         let claveOficinaOrigen = `${oficina}|||${origen}`;
 
         if (!oficinasOrigenMap[claveOficinaOrigen]) {
@@ -699,7 +699,6 @@
         }
       });
 
-      // Calculamos los servicios por cada grupo Oficina + Origen
       Object.keys(oficinasOrigenMap).forEach(key => {
         let item = oficinasOrigenMap[key];
         item.servicios = item.serviciosSet.size > 0 ? item.serviciosSet.size : 1;
@@ -756,7 +755,6 @@
         }
       });
 
-      // Agregamos por nombre de oficina para el gráfico de barras top
       let oficinasBarMap = {};
       Object.values(oficinasOrigenMap).forEach(item => {
         oficinasBarMap[item.oficinaName] = (oficinasBarMap[item.oficinaName] || 0) + item.servicios;
@@ -835,7 +833,6 @@
           "% Participación": `${pct}%`
         });
 
-        // Estilo visual diferenciado según el origen
         let badgeColor = item.origenLabel.includes("SGD") 
           ? 'bg-blue-50 text-blue-700 border-blue-200' 
           : 'bg-amber-50 text-amber-700 border-amber-200';
@@ -893,7 +890,7 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          rawSaipData = results.data.filter(row => Object.values(row).join('').trim() !== '');
+          rawSaipData = (results.data || []).filter(row => Object.values(row).join('').trim() !== '');
           extractFeriados(results.data);
           applyFiltersSaip();
         }
@@ -902,7 +899,7 @@
 
     function extractFeriados(data) {
       feriadosSet.clear();
-      data.forEach(row => {
+      (data || []).forEach(row => {
         const valAY = getFieldValue(row, ['FERIADOS', 'FERIADO', 'AY']);
         if (valAY) {
           const dt = parseDatePeruvian(valAY);
