@@ -119,7 +119,7 @@
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-servicios">0</div>
-          <p class="text-xs text-slate-400 mt-1">Solicitudes únicas ingresadas</p>
+          <p class="text-xs text-slate-400 mt-1">Último número de solicitud (Col. A)</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -582,8 +582,7 @@
     }
 
     function updateArchivoDashboard(data) {
-      // Conteo real y limpio de solicitudes únicas basadas en la Columna A con trim()
-      let solicitudesUnicas = new Set();
+      let maxSolicitudNum = 0;
       let totalDocs = 0;
       let totalImagenes = 0;
       let sumMetricaTiempo = 0;
@@ -600,8 +599,10 @@
         const condicion = getFieldValue(r, ['CONDICIÓN DE SERVICIO', 'CONDICION DE SERVICIO', 'CONDICION']).toUpperCase() || 'OTROS';
         const oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA']).toUpperCase() || 'SIN OFICINA';
 
-        if (valSolicitudId !== '') {
-          solicitudesUnicas.add(String(valSolicitudId).trim());
+        // Capturamos el número máximo de la columna A para fijar el total exacto de servicios
+        let numParsed = parseInt(String(valSolicitudId).trim(), 10);
+        if (!isNaN(numParsed) && numParsed > maxSolicitudNum) {
+          maxSolicitudNum = numParsed;
         }
 
         let valDocs = parseFloat(String(valDocsStr).replace(',', '.'));
@@ -629,7 +630,8 @@
         oficinasMap[oficina].imgs += valImgs;
       });
 
-      const totalServicios = solicitudesUnicas.size > 0 ? solicitudesUnicas.size : data.length;
+      // El total de servicios será exactamente el número máximo encontrado en la columna A (ej. 152)
+      const totalServicios = maxSolicitudNum > 0 ? maxSolicitudNum : data.length;
 
       const promDocsPorServicio = totalServicios > 0 ? (totalDocs / totalServicios).toFixed(1) : '0.0';
       const promImgsPorDoc = totalDocs > 0 ? (totalImagenes / totalDocs).toFixed(1) : '0.0';
