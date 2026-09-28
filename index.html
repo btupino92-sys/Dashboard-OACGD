@@ -1,5 +1,588 @@
-function updateArchivoDashboard(data) {
-      // Conteo real y limpio de solicitudes únicas basadas en la Columna A
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard OACGD - MIMP</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js DataLabels Plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <!-- PapaParse -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <!-- SheetJS (XLSX) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+    .active-tab { border-bottom: 3px solid #d97706; color: #d97706; font-weight: 700; background-color: #f8fafc; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printable-area, #printable-area *, #printable-archivo, #printable-archivo * { visibility: visible; }
+      #printable-area, #printable-archivo { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+
+  <!-- Header Institucional -->
+  <header class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50 no-print">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center">
+        <img src="https://i.postimg.cc/tg2LpgFH/PCM-MIMP.png" alt="Logo MIMP" class="h-12 md:h-14 object-contain">
+      </div>
+      <div class="text-center">
+        <h1 class="text-base md:text-xl font-bold text-slate-900 uppercase tracking-tight">
+          Dashboard de la Oficina de Atención a la Ciudadanía y Gestión Documental
+        </h1>
+        <p class="text-xs text-slate-500 font-medium">Monitoreo y Seguimiento Consolidado en Tiempo Real</p>
+      </div>
+      <div class="flex items-center">
+        <img src="https://i.postimg.cc/VND3mNXQ/Logo-Peru-Responde-Logo-horizontal-(1).png" alt="Logo Perú Responde" class="h-10 md:h-12 object-contain">
+      </div>
+    </div>
+
+    <!-- Navegación según el orden solicitado -->
+    <nav class="bg-slate-900 border-b border-slate-800 text-slate-300 text-xs md:text-sm">
+      <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-2 md:space-x-4">
+        <button onclick="switchTab('resumen')" id="tab-resumen" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-chart-pie mr-1.5 text-slate-400"></i>Consolidado General</button>
+        <button onclick="switchTab('archivo')" id="tab-archivo" class="py-3 px-3 active-tab border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-box-archive mr-1.5 text-amber-400"></i>Archivo Central</button>
+        <button onclick="switchTab('saip')" id="tab-saip" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-file-shield mr-1.5 text-blue-400"></i>Acceso a la Información Pública</button>
+        <button onclick="switchTab('mesapartes')" id="tab-mesapartes" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-envelope-open-text mr-1.5 text-slate-400"></i>Mesa de Partes</button>
+        <button onclick="switchTab('atencion')" id="tab-atencion" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-headset mr-1.5 text-slate-400"></i>Atención a la Ciudadanía</button>
+        <button onclick="switchTab('cendoc')" id="tab-cendoc" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-book-bookmark mr-1.5 text-slate-400"></i>CENDOC</button>
+        <button onclick="switchTab('admin')" id="tab-admin" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-building-user mr-1.5 text-slate-400"></i>Área Administrativa</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- 1. SECCIÓN ARCHIVO CENTRAL (PRIMERO) -->
+    <section id="sec-archivo" class="space-y-6">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
+        <div>
+          <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Servicios Archivísticos - Archivo Central</h2>
+          <p class="text-xs text-slate-500">Monitoreo de Solicitudes, Documentos Gestionados, Folios/Imágenes y Tiempos de Atención</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+          <span class="font-bold text-slate-700 uppercase tracking-wider text-[10px]"><i class="fa-solid fa-filter text-amber-600 mr-1"></i> Filtro Archivo:</span>
+
+          <div class="flex items-center gap-1">
+            <label class="text-slate-600 font-medium">Año:</label>
+            <select id="filterYearArchivo" onchange="applyFiltersArchivo()" class="bg-white text-slate-800 rounded px-2 py-1 border border-slate-300 outline-none focus:border-amber-600 font-bold">
+              <option value="2026" selected>2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="ALL">Todos los Años</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <label class="text-slate-600 font-medium">Mes:</label>
+            <select id="filterMonthArchivo" onchange="applyFiltersArchivo()" class="bg-white text-slate-800 rounded px-2 py-1 border border-slate-300 outline-none focus:border-amber-600 font-medium">
+              <option value="ALL" selected>Todos los Meses</option>
+              <option value="ENERO">Enero</option>
+              <option value="FEBRERO">Febrero</option>
+              <option value="MARZO">Marzo</option>
+              <option value="ABRIL">Abril</option>
+              <option value="MAYO">Mayo</option>
+              <option value="JUNIO">Junio</option>
+              <option value="JULIO">Julio</option>
+              <option value="AGOSTO">Agosto</option>
+              <option value="SETIEMBRE">Setiembre</option>
+              <option value="OCTUBRE">Octubre</option>
+              <option value="NOVIEMBRE">Noviembre</option>
+              <option value="DICIEMBRE">Diciembre</option>
+            </select>
+          </div>
+
+          <button onclick="fetchArchivoData()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded transition font-medium flex items-center gap-1">
+            <i class="fa-solid fa-rotate"></i> Actualizar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjetas KPI Archivo Central -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+            <span>Total Servicios</span>
+            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
+          </div>
+          <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-servicios">0</div>
+          <p class="text-xs text-slate-400 mt-1">Solicitudes únicas ingresadas</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+            <span>Docs Solicitados</span>
+            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-files"></i></div>
+          </div>
+          <div class="text-3xl font-extrabold text-blue-600 mt-2" id="kpi-total-docs-archivo">0</div>
+          <p class="text-xs text-blue-600 mt-1 font-semibold" id="kpi-prom-docs-servicio">0.0 docs / servicio</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+            <span>Imágenes / Folios</span>
+            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-copy"></i></div>
+          </div>
+          <div class="text-3xl font-extrabold text-indigo-600 mt-2" id="kpi-total-imagenes">0</div>
+          <p class="text-xs text-indigo-500 mt-1 font-semibold" id="kpi-prom-imgs-doc">0.0 imágenes / doc</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+            <span>Prom. / Servicio</span>
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
+          </div>
+          <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-prom-tiempo-servicio">0</div>
+          <p class="text-xs text-slate-400 mt-1">Tiempo promedio por solicitud</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+            <span>Prom. / Documento</span>
+            <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-stopwatch"></i></div>
+          </div>
+          <div class="text-3xl font-extrabold text-purple-600 mt-2" id="kpi-prom-tiempo-doc">0</div>
+          <p class="text-xs text-purple-500 mt-1 font-semibold">Tiempo promedio por documento</p>
+        </div>
+      </div>
+
+      <!-- Gráficos Archivo Central -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow relative">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-chart-pie text-amber-600"></i> Condición de Servicio (Modalidades)
+            </h3>
+            <button onclick="downloadChartImage('chartCondicionArchivo', 'Grafico_Condicion_Servicio_Archivo.png')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium flex items-center gap-1 transition no-print">
+              <i class="fa-solid fa-image text-amber-600"></i> Descargar Gráfico
+            </button>
+          </div>
+          <div class="h-64 flex justify-center items-center">
+            <canvas id="chartCondicionArchivo"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow relative">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-chart-column text-amber-600"></i> Mayor Demanda por Unidad Orgánica
+            </h3>
+            <button onclick="downloadChartImage('chartOficinasArchivo', 'Grafico_Demanda_Oficinas_Archivo.png')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium flex items-center gap-1 transition no-print">
+              <i class="fa-solid fa-image text-amber-600"></i> Descargar Gráfico
+            </button>
+          </div>
+          <div class="h-64 flex justify-center items-center">
+            <canvas id="chartOficinasArchivo"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla Consolidada Archivo Central -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow space-y-4" id="printable-archivo">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-building text-amber-600"></i> Consolidado de Solicitudes por Oficina Solicitante
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Sincronizado dinámicamente con los Filtros de Archivo Central</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 no-print">
+            <button onclick="exportArchivoToExcelXLSX()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-file-excel"></i> Exportar a Excel (.xlsx)
+            </button>
+
+            <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-print"></i> Imprimir Tabla / PDF
+            </button>
+
+            <div class="relative">
+              <input type="text" id="searchOficinaArchivo" onkeyup="filterTableOficinaArchivo()" placeholder="Buscar Oficina..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-amber-500 w-full sm:w-48">
+              <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-2.5 top-2.5"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto max-h-96">
+          <table class="w-full text-left text-xs border-collapse" id="tableOficinasArchivo">
+            <thead>
+              <tr class="bg-slate-800 text-white uppercase text-[10px] tracking-wider sticky top-0 z-10">
+                <th class="py-2.5 px-3 border border-slate-700">#</th>
+                <th class="py-2.5 px-3 border border-slate-700">Unidad Orgánica / Oficina Solicitante</th>
+                <th class="py-2.5 px-3 border border-slate-700 text-center">N° Servicios</th>
+                <th class="py-2.5 px-3 border border-slate-700 text-center">Total Docs</th>
+                <th class="py-2.5 px-3 border border-slate-700 text-center">Total Imágenes</th>
+                <th class="py-2.5 px-3 border border-slate-700 text-right">% Participación</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-oficinas-archivo" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+            <tfoot class="bg-slate-900 text-white font-bold text-xs sticky bottom-0 z-10 border-t-2 border-slate-700">
+              <tr>
+                <td colspan="2" class="py-3 px-3 uppercase tracking-wider text-right border border-slate-800">
+                  <i class="fa-solid fa-calculator mr-1.5 text-amber-400"></i> Totales Consolidados:
+                </td>
+                <td class="py-3 px-3 text-center text-sm font-extrabold text-amber-300 bg-slate-800 border border-slate-800" id="tfoot-archivo-servicios">0</td>
+                <td class="py-3 px-3 text-center text-sm font-extrabold text-blue-300 bg-slate-800 border border-slate-800" id="tfoot-archivo-docs">0</td>
+                <td class="py-3 px-3 text-center text-sm font-extrabold text-indigo-300 bg-slate-800 border border-slate-800" id="tfoot-archivo-imgs">0</td>
+                <td class="py-3 px-3 text-right text-emerald-400 font-bold border border-slate-800" id="tfoot-archivo-pct">100%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. SECCIÓN ACCESO A LA INFORMACIÓN PÚBLICA (SEGUNDO) -->
+    <section id="sec-saip" class="hidden space-y-6">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
+        <div>
+          <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Acceso a la Información Pública (SAIP)</h2>
+          <p class="text-xs text-slate-500">Indicadores de gestión, plazos normativos y unidades derivadas</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+          <span class="font-bold text-slate-700 uppercase tracking-wider text-[10px]"><i class="fa-solid fa-filter text-blue-600 mr-1"></i> Filtro SAIP:</span>
+
+          <div class="flex items-center gap-1">
+            <label class="text-slate-600 font-medium">Año:</label>
+            <select id="filterYearSaip" onchange="applyFiltersSaip()" class="bg-white text-slate-800 rounded px-2 py-1 border border-slate-300 outline-none focus:border-blue-600 font-bold">
+              <option value="2026" selected>2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="ALL">Todos los Años</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <label class="text-slate-600 font-medium">Mes:</label>
+            <select id="filterMonthSaip" onchange="applyFiltersSaip()" class="bg-white text-slate-800 rounded px-2 py-1 border border-slate-300 outline-none focus:border-blue-600 font-medium">
+              <option value="ALL" selected>Todos los Meses</option>
+              <option value="01">Enero</option>
+              <option value="02">Febrero</option>
+              <option value="03">Marzo</option>
+              <option value="04">Abril</option>
+              <option value="05">Mayo</option>
+              <option value="06">Junio</option>
+              <option value="07">Julio</option>
+              <option value="08">Agosto</option>
+              <option value="09">Setiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+          </div>
+
+          <button onclick="fetchSaipData()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition font-medium flex items-center gap-1">
+            <i class="fa-solid fa-rotate"></i> Actualizar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjetas KPI SAIP -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+            <span>Total Solicitudes</span>
+            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-folder-open"></i></div>
+          </div>
+          <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-saip">0</div>
+          <p class="text-xs text-slate-400 mt-1">Registros mapeados en el filtro</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+            <span>Atendidas en Plazo</span>
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-circle-check"></i></div>
+          </div>
+          <div class="text-3xl font-extrabold text-emerald-600 mt-2" id="kpi-plazo-saip">0</div>
+          <p class="text-xs text-emerald-600 mt-1 font-semibold" id="kpi-plazo-percent">0% cumplimiento</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+            <span>Fuera de Plazo</span>
+            <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          </div>
+          <div class="text-3xl font-extrabold text-rose-600 mt-2" id="kpi-fueraplazo-saip">0</div>
+          <p class="text-xs text-rose-500 mt-1 font-semibold" id="kpi-fueraplazo-percent">0% del total</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+            <span>Prom. Días Atención</span>
+            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
+          </div>
+          <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-dias-saip">0</div>
+          <p class="text-xs text-slate-400 mt-1">Días de atención promedio (Col. W)</p>
+        </div>
+      </div>
+
+      <!-- Gráficos SAIP -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow relative">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-chart-pie text-blue-600"></i> Cumplimiento de Plazos Normativos
+            </h3>
+            <button onclick="downloadChartImage('chartPlazos', 'Grafico_Cumplimiento_Plazos_SAIP.png')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium flex items-center gap-1 transition no-print">
+              <i class="fa-solid fa-image text-blue-600"></i> Descargar Gráfico
+            </button>
+          </div>
+          <div class="h-64 flex justify-center items-center">
+            <canvas id="chartPlazos"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow relative">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-chart-column text-blue-600"></i> Solicitudes por Modalidad de Ingreso
+            </h3>
+            <button onclick="downloadChartImage('chartModalidad', 'Grafico_Modalidad_Ingreso_SAIP.png')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium flex items-center gap-1 transition no-print">
+              <i class="fa-solid fa-image text-blue-600"></i> Descargar Gráfico
+            </button>
+          </div>
+          <div class="h-64 flex justify-center items-center">
+            <canvas id="chartModalidad"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla Consolidada SAIP -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow space-y-4" id="printable-area">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-sitemap text-blue-600"></i> Consolidado de Áreas y Movimiento de Documentos
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Sincronizado dinámicamente con los Filtros de SAIP</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 no-print">
+            <button onclick="exportSaipToExcelXLSX()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-file-excel"></i> Exportar a Excel (.xlsx)
+            </button>
+
+            <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-print"></i> Imprimir Tabla / PDF
+            </button>
+
+            <div class="relative">
+              <input type="text" id="searchArea" onkeyup="filterTableArea()" placeholder="Buscar Área o Detalle..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-blue-500 w-full sm:w-48">
+              <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-2.5 top-2.5"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto max-h-96">
+          <table class="w-full text-left text-xs border-collapse" id="tableAreas">
+            <thead>
+              <tr class="bg-slate-800 text-white uppercase text-[10px] tracking-wider sticky top-0 z-10">
+                <th class="py-2.5 px-3 border border-slate-700">#</th>
+                <th class="py-2.5 px-3 border border-slate-700">Unidad de Organización / Entidad</th>
+                <th class="py-2.5 px-3 border border-slate-700">Acción / Detalle</th>
+                <th class="py-2.5 px-3 border border-slate-700">Año - Mes</th>
+                <th class="py-2.5 px-3 border border-slate-700 text-center">Cantidad Documentos</th>
+                <th class="py-2.5 px-3 border border-slate-700 text-right">% Participación</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-areas" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+            <tfoot class="bg-slate-900 text-white font-bold text-xs sticky bottom-0 z-10 border-t-2 border-slate-700">
+              <tr>
+                <td colspan="4" class="py-3 px-3 uppercase tracking-wider text-right border border-slate-800">
+                  <i class="fa-solid fa-calculator mr-1.5 text-blue-400"></i> Total Documentos:
+                </td>
+                <td class="py-3 px-3 text-center text-sm font-extrabold text-blue-300 bg-slate-800 border border-slate-800" id="tfoot-total-docs">0</td>
+                <td class="py-3 px-3 text-right text-emerald-400 font-bold border border-slate-800" id="tfoot-total-pct">100%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. SECCIÓN MESA DE PARTES (TERCERO) -->
+    <section id="sec-mesapartes" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
+        <h3 class="font-bold text-base text-slate-800">Módulos de Mesa de Partes</h3>
+        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
+      </div>
+    </section>
+
+    <!-- 4. SECCIÓN ATENCIÓN A LA CIUDADANÍA (CUARTO) -->
+    <section id="sec-atencion" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
+        <h3 class="font-bold text-base text-slate-800">Módulos de Atención a la Ciudadanía</h3>
+        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
+      </div>
+    </section>
+
+    <!-- 5. SECCIÓN CENDOC (QUINTO) -->
+    <section id="sec-cendoc" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
+        <h3 class="font-bold text-base text-slate-800">Módulos de CENDOC</h3>
+        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
+      </div>
+    </section>
+
+    <!-- 6. SECCIÓN ÁREA ADMINISTRATIVA (SEXTO) -->
+    <section id="sec-admin" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
+        <h3 class="font-bold text-base text-slate-800">Módulos de Área Administrativa</h3>
+        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
+      </div>
+    </section>
+
+    <!-- VISTA EJECUTIVA TRANSVERSAL -->
+    <section id="sec-resumen" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
+        <div class="flex items-center gap-3 text-blue-900 mb-2">
+          <i class="fa-solid fa-circle-info text-xl text-blue-600"></i>
+          <h3 class="font-bold text-base">Consolidado General de la Oficina (OACGD)</h3>
+        </div>
+        <p class="text-sm text-slate-600">Integración de indicadores transversales de las 6 áreas operativas.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // URLs de exportación CSV
+    const SAIP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/10dbxxD902fn7seizSeShVYtOiZQc1KCFBPpnbmo7tCU/export?format=csv';
+    const ARCHIVO_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?output=csv';
+
+    const MESES_NOMBRES = {
+      '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril',
+      '05': 'Mayo', '06': 'Junio', '07': 'Julio', '08': 'Agosto',
+      '09': 'Setiembre', '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre'
+    };
+
+    // Variables globales
+    let rawSaipData = [];
+    let currentExportSaip = [];
+    let chartPlazosObj = null;
+    let chartModalidadObj = null;
+    let feriadosSet = new Set();
+
+    let rawArchivoData = [];
+    let currentExportArchivo = [];
+    let chartCondicionArchivoObj = null;
+    let chartOficinasArchivoObj = null;
+
+    Chart.register(ChartDataLabels);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchArchivoData();
+      fetchSaipData();
+    });
+
+    function switchTab(tabId) {
+      const tabs = ['resumen', 'archivo', 'saip', 'mesapartes', 'atencion', 'cendoc', 'admin'];
+      tabs.forEach(t => {
+        const sec = document.getElementById(`sec-${t}`);
+        const btn = document.getElementById(`tab-${t}`);
+        if(sec) sec.classList.add('hidden');
+        if(btn) btn.classList.remove('active-tab');
+      });
+
+      const currentSec = document.getElementById(`sec-${tabId}`);
+      const currentBtn = document.getElementById(`tab-${tabId}`);
+      if(currentSec) currentSec.classList.remove('hidden');
+      if(currentBtn) currentBtn.classList.add('active-tab');
+    }
+
+    function getFieldValue(row, possibleKeys) {
+      const keys = Object.keys(row);
+      for (let pKey of possibleKeys) {
+        const foundKey = keys.find(k => k.trim().toLowerCase() === pKey.toLowerCase());
+        if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null) {
+          const val = String(row[foundKey]).trim();
+          if (val !== '') return val;
+        }
+      }
+      return '';
+    }
+
+    function parseDatePeruvian(dateStr) {
+      if (!dateStr || typeof dateStr !== 'string') return null;
+      let clean = dateStr.trim();
+      const match = clean.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+      if (!match) return null;
+
+      let day = parseInt(match[1], 10);
+      let month = parseInt(match[2], 10) - 1;
+      let year = parseInt(match[3], 10);
+
+      if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+      if (year < 100) year += 2000;
+      if (month < 0 || month > 11 || day < 1 || day > 31) return null;
+
+      return new Date(year, month, day);
+    }
+
+    function formatDateToKey(d) {
+      if (!d) return '';
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    // ==========================================
+    // 1. ARCHIVO CENTRAL
+    // ==========================================
+    function fetchArchivoData() {
+      Papa.parse(ARCHIVO_SHEET_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          rawArchivoData = results.data.filter(row => Object.values(row).join('').trim() !== '');
+          applyFiltersArchivo();
+        }
+      });
+    }
+
+    function applyFiltersArchivo() {
+      const selectedYear = document.getElementById('filterYearArchivo').value;
+      const selectedMonth = document.getElementById('filterMonthArchivo').value.toUpperCase();
+
+      let filtered = rawArchivoData.filter(row => {
+        const mesRow = getFieldValue(row, ['MES', 'Mes']).toUpperCase();
+        const fechaPrest = getFieldValue(row, ['DIA PREST.', 'DIA PREST', 'FECHA']);
+        
+        let rowYear = '2026';
+        if (fechaPrest) {
+          const dt = parseDatePeruvian(fechaPrest);
+          if (dt) rowYear = String(dt.getFullYear());
+        }
+
+        if (selectedYear !== 'ALL' && rowYear !== selectedYear) return false;
+        if (selectedMonth !== 'ALL' && !mesRow.includes(selectedMonth)) return false;
+
+        return true;
+      });
+
+      updateArchivoDashboard(filtered);
+    }
+
+    function updateArchivoDashboard(data) {
+      // Conteo real y limpio de solicitudes únicas basadas en la Columna A con trim()
       let solicitudesUnicas = new Set();
       let totalDocs = 0;
       let totalImagenes = 0;
@@ -10,7 +593,6 @@ function updateArchivoDashboard(data) {
       let oficinasMap = {};
 
       data.forEach(r => {
-        // Obtenemos el valor de la columna A y lo limpiamos de espacios
         const valSolicitudId = getFieldValue(r, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
         const valDocsStr = getFieldValue(r, ['Nª DE DOC', 'N° DE DOC', 'CANTIDAD', 'DOCUMENTOS']);
         const valImgsStr = getFieldValue(r, ['IMAGENES', 'IMÁGENES', 'FOLIOS']);
@@ -19,7 +601,6 @@ function updateArchivoDashboard(data) {
         const oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA']).toUpperCase() || 'SIN OFICINA';
 
         if (valSolicitudId !== '') {
-          // Normalizamos a string limpio para que las repeticiones (como el 158) cuenten como uno solo
           solicitudesUnicas.add(String(valSolicitudId).trim());
         }
 
@@ -48,8 +629,6 @@ function updateArchivoDashboard(data) {
         oficinasMap[oficina].imgs += valImgs;
       });
 
-      // Si el Set detecta las solicitudes únicas correctamente, usará el tamaño real. 
-      // Si por alguna razón la columna A viniera vacía, se protege con el total de filas.
       const totalServicios = solicitudesUnicas.size > 0 ? solicitudesUnicas.size : data.length;
 
       const promDocsPorServicio = totalServicios > 0 ? (totalDocs / totalServicios).toFixed(1) : '0.0';
@@ -70,3 +649,440 @@ function updateArchivoDashboard(data) {
       renderChartsArchivo(condicionesMap, oficinasMap);
       renderTableOficinasArchivo(oficinasMap, totalServicios);
     }
+
+    function renderChartsArchivo(condicionesMap, oficinasMap) {
+      const totalCond = Object.values(condicionesMap).reduce((a, b) => a + b, 0);
+
+      const ctx1 = document.getElementById('chartCondicionArchivo').getContext('2d');
+      if (chartCondicionArchivoObj) chartCondicionArchivoObj.destroy();
+      chartCondicionArchivoObj = new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(condicionesMap),
+          datasets: [{
+            data: Object.values(condicionesMap),
+            backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ec4899', '#64748b']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            datalabels: {
+              color: '#ffffff',
+              font: { weight: 'bold', size: 12 },
+              formatter: (val) => val > 0 ? `${val}\n(${((val/totalCond)*100).toFixed(1)}%)` : '',
+              textAlign: 'center'
+            }
+          }
+        }
+      });
+
+      let sortedOficinas = Object.keys(oficinasMap).sort((a,b) => oficinasMap[b].servicios - oficinasMap[a].servicios).slice(0, 7);
+      let dataServiciosTop = sortedOficinas.map(k => oficinasMap[k].servicios);
+
+      const ctx2 = document.getElementById('chartOficinasArchivo').getContext('2d');
+      if (chartOficinasArchivoObj) chartOficinasArchivoObj.destroy();
+      chartOficinasArchivoObj = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: sortedOficinas,
+          datasets: [{
+            label: 'Cantidad de Servicios',
+            data: dataServiciosTop,
+            backgroundColor: '#d97706',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              anchor: 'end',
+              align: 'start',
+              color: '#ffffff',
+              font: { weight: 'bold', size: 12 },
+              formatter: (val) => val > 0 ? val : ''
+            }
+          }
+        }
+      });
+    }
+
+    function renderTableOficinasArchivo(oficinasMap, totalServicios) {
+      const tbody = document.getElementById('tbody-oficinas-archivo');
+      const tfootServ = document.getElementById('tfoot-archivo-servicios');
+      const tfootDocs = document.getElementById('tfoot-archivo-docs');
+      const tfootImgs = document.getElementById('tfoot-archivo-imgs');
+      tbody.innerHTML = '';
+      currentExportArchivo = [];
+
+      let sortedKeys = Object.keys(oficinasMap).sort((a, b) => oficinasMap[b].servicios - oficinasMap[a].servicios);
+
+      if (sortedKeys.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No hay registros para el filtro seleccionado.</td></tr>`;
+        tfootServ.innerText = '0';
+        tfootDocs.innerText = '0';
+        tfootImgs.innerText = '0';
+        return;
+      }
+
+      let sumServ = 0;
+      let sumDocs = 0;
+      let sumImgs = 0;
+
+      sortedKeys.forEach((oficinaName, index) => {
+        let item = oficinasMap[oficinaName];
+        sumServ += item.servicios;
+        sumDocs += item.docs;
+        sumImgs += item.imgs;
+
+        let pct = totalServicios > 0 ? ((item.servicios / totalServicios) * 100).toFixed(1) : 0;
+
+        currentExportArchivo.push({
+          "N°": index + 1,
+          "Unidad Orgánica / Oficina": oficinaName,
+          "Cantidad Servicios": item.servicios,
+          "Total Documentos": item.docs,
+          "Total Imágenes": item.imgs,
+          "% Participación": `${pct}%`
+        });
+
+        let row = document.createElement('tr');
+        row.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+        row.innerHTML = `
+          <td class="py-2.5 px-3 font-semibold text-slate-400">${index + 1}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-800">${oficinaName}</td>
+          <td class="py-2.5 px-3 text-center font-extrabold text-amber-700 bg-amber-50/50 rounded-lg">${item.servicios}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-blue-700">${item.docs.toLocaleString()}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-indigo-700">${item.imgs.toLocaleString()}</td>
+          <td class="py-2.5 px-3 text-right font-medium text-slate-600">${pct}%</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      tfootServ.innerText = sumServ;
+      tfootDocs.innerText = sumDocs.toLocaleString();
+      tfootImgs.innerText = sumImgs.toLocaleString();
+    }
+
+    function filterTableOficinaArchivo() {
+      const input = document.getElementById('searchOficinaArchivo').value.toUpperCase();
+      const trs = document.getElementById('tbody-oficinas-archivo').getElementsByTagName('tr');
+      for (let i = 0; i < trs.length; i++) {
+        const oficinaTd = trs[i].getElementsByTagName('td')[1];
+        if (oficinaTd) {
+          const ofiText = oficinaTd.textContent || oficinaTd.innerText;
+          trs[i].style.display = (ofiText.toUpperCase().indexOf(input) > -1) ? "" : "none";
+        }
+      }
+    }
+
+    function exportArchivoToExcelXLSX() {
+      if (currentExportArchivo.length === 0) return alert("No hay datos cargados para exportar.");
+      const year = document.getElementById('filterYearArchivo').value;
+      const month = document.getElementById('filterMonthArchivo').value;
+      const worksheet = XLSX.utils.json_to_sheet(currentExportArchivo);
+      worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }];
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Consolidado_Archivo");
+      XLSX.writeFile(workbook, `Consolidado_Archivo_Central_${year}_${month}.xlsx`);
+    }
+
+    // ==========================================
+    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP)
+    // ==========================================
+    function fetchSaipData() {
+      Papa.parse(SAIP_SHEET_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          rawSaipData = results.data.filter(row => Object.values(row).join('').trim() !== '');
+          extractFeriados(results.data);
+          applyFiltersSaip();
+        }
+      });
+    }
+
+    function extractFeriados(data) {
+      feriadosSet.clear();
+      data.forEach(row => {
+        const valAY = getFieldValue(row, ['FERIADOS', 'FERIADO', 'AY']);
+        if (valAY) {
+          const dt = parseDatePeruvian(valAY);
+          if (dt) feriadosSet.add(formatDateToKey(dt));
+        }
+      });
+    }
+
+    function isBusinessDay(date) {
+      const dayOfWeek = date.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) return false;
+      return !feriadosSet.has(formatDateToKey(date));
+    }
+
+    function countBusinessDaysBetween(dtInicio, dtFin) {
+      if (!dtInicio || !dtFin || dtFin < dtInicio) return 0;
+      let current = new Date(dtInicio.getTime());
+      current.setDate(current.getDate() + 1);
+      let businessDays = 0;
+
+      while (current <= dtFin) {
+        if (isBusinessDay(current)) businessDays++;
+        current.setDate(current.getDate() + 1);
+      }
+      return businessDays;
+    }
+
+    function applyFiltersSaip() {
+      const selectedYear = document.getElementById('filterYearSaip').value;
+      const selectedMonth = document.getElementById('filterMonthSaip').value;
+
+      let filtered = rawSaipData.filter(row => {
+        const fechaStr = getFieldValue(row, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']);
+        if (!fechaStr) return selectedYear === 'ALL' && selectedMonth === 'ALL';
+
+        const parsedDate = parseDatePeruvian(fechaStr);
+        if (!parsedDate) return true;
+
+        const year = String(parsedDate.getFullYear());
+        const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+
+        if (selectedYear !== 'ALL' && year !== selectedYear) return false;
+        if (selectedMonth !== 'ALL' && month !== selectedMonth) return false;
+
+        return true;
+      });
+
+      updateSaipDashboard(filtered);
+    }
+
+    function updateSaipDashboard(data) {
+      const total = data.length;
+      let enPlazo = 0;
+      let fueraPlazo = 0;
+      let pendientes = 0;
+      let sumDiasAtencionColW = 0;
+      let countDiasColW = 0;
+      let modalidades = {};
+      let areasConsolidadas = {};
+
+      data.forEach(r => {
+        const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso']);
+        const fechaNotificacionStr = getFieldValue(r, ['Fecha de Notificación', 'FECHA DE NOTIFICACIÓN', 'Fecha de notificacion', 'Fecha Notificacion']);
+        const valorColumnaX = getFieldValue(r, ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ATENCION PLAZO', 'Atención plazo', 'Estado', 'ESTADO']).toUpperCase();
+        const valorColumnaW = getFieldValue(r, ['DÍAS DE ATENCIÓN', 'DIAS DE ATENCION', 'DÍAS ATENCIÓN', 'DIAS ATENCION']);
+
+        const dtIngreso = parseDatePeruvian(fechaIngresoStr);
+        const dtNotificacion = parseDatePeruvian(fechaNotificacionStr);
+
+        if (valorColumnaX.includes('EN PLAZO') || valorColumnaX.includes('ATENDIDO EN PLAZO')) {
+          enPlazo++;
+        } else if (valorColumnaX.includes('FUERA DE PLAZO') || valorColumnaX.includes('FUERA')) {
+          fueraPlazo++;
+        } else {
+          if (dtIngreso && dtNotificacion) {
+            const diasHabiles = countBusinessDaysBetween(dtIngreso, dtNotificacion);
+            if (diasHabiles <= 10) enPlazo++; else fueraPlazo++;
+          } else {
+            pendientes++;
+          }
+        }
+
+        if (valorColumnaW) {
+          const numDias = parseFloat(valorColumnaW.replace(',', '.'));
+          if (!isNaN(numDias) && numDias >= 0) {
+            sumDiasAtencionColW += numDias;
+            countDiasColW++;
+          }
+        } else if (dtIngreso && dtNotificacion) {
+          const diasHabiles = countBusinessDaysBetween(dtIngreso, dtNotificacion);
+          if (diasHabiles >= 0) {
+            sumDiasAtencionColW += diasHabiles;
+            countDiasColW++;
+          }
+        }
+
+        let mod = getFieldValue(r, ['Origen de la solicitud', 'ORIGEN DE LA SOLICITUD', 'MODALIDAD DE INGRESO']).toUpperCase() || 'OTROS';
+        modalidades[mod] = (modalidades[mod] || 0) + 1;
+
+        let areaNom = getFieldValue(r, ['Área derivada', 'AREA DERIVADA', 'AREA', 'Área']).toUpperCase() || 'SIN DERIVAR / NO ESPECIFICA';
+        let detalleAccion = getFieldValue(r, ['Forma de entrega', 'FORMA DE ENTREGA', 'DETALLE']).toUpperCase() || 'SIN DETALLE';
+
+        let keyMes = 'GENERAL';
+        if (dtIngreso) {
+          let mNum = String(dtIngreso.getMonth() + 1).padStart(2, '0');
+          let yNum = String(dtIngreso.getFullYear());
+          keyMes = `${yNum} - ${MESES_NOMBRES[mNum] || mNum}`;
+        }
+
+        let areaKey = `${areaNom}||${detalleAccion}||${keyMes}`;
+        areasConsolidadas[areaKey] = (areasConsolidadas[areaKey] || 0) + 1;
+      });
+
+      document.getElementById('kpi-total-saip').innerText = total;
+      document.getElementById('kpi-plazo-saip').innerText = enPlazo;
+      document.getElementById('kpi-fueraplazo-saip').innerText = fueraPlazo;
+
+      const pPlazo = total > 0 ? ((enPlazo / total) * 100).toFixed(1) : '0.0';
+      const pFuera = total > 0 ? ((fueraPlazo / total) * 100).toFixed(1) : '0.0';
+      document.getElementById('kpi-plazo-percent').innerText = `${pPlazo}% cumplimiento`;
+      document.getElementById('kpi-fueraplazo-percent').innerText = `${pFuera}% del total`;
+
+      const avgDias = countDiasColW > 0 ? (sumDiasAtencionColW / countDiasColW).toFixed(1) : '0';
+      document.getElementById('kpi-dias-saip').innerText = avgDias;
+
+      renderChartsSaip(enPlazo, fueraPlazo, pendientes, modalidades);
+      renderTableAreasSaip(areasConsolidadas, total);
+    }
+
+    function renderChartsSaip(enPlazo, fueraPlazo, pendientes, modalidades) {
+      const totalPie = enPlazo + fueraPlazo + Math.max(0, pendientes);
+
+      const ctx1 = document.getElementById('chartPlazos').getContext('2d');
+      if (chartPlazosObj) chartPlazosObj.destroy();
+      chartPlazosObj = new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+          labels: ['En Plazo', 'Fuera de Plazo', 'En Trámite / Pendientes'],
+          datasets: [{
+            data: [enPlazo, fueraPlazo, Math.max(0, pendientes)],
+            backgroundColor: ['#10b981', '#f43f5e', '#cbd5e1']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            datalabels: {
+              color: '#ffffff',
+              font: { weight: 'bold', size: 13 },
+              formatter: (val) => val > 0 ? `${val}\n(${((val/totalPie)*100).toFixed(1)}%)` : '',
+              textAlign: 'center'
+            }
+          }
+        }
+      });
+
+      const ctx2 = document.getElementById('chartModalidad').getContext('2d');
+      if (chartModalidadObj) chartModalidadObj.destroy();
+      chartModalidadObj = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(modalidades),
+          datasets: [{
+            label: 'Cantidad de Solicitudes',
+            data: Object.values(modalidades),
+            backgroundColor: '#2563eb',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              anchor: 'end',
+              align: 'start',
+              color: '#ffffff',
+              font: { weight: 'bold', size: 12 },
+              formatter: (val) => val > 0 ? val : ''
+            }
+          }
+        }
+      });
+    }
+
+    function renderTableAreasSaip(areasDict, totalGeneral) {
+      const tbody = document.getElementById('tbody-areas');
+      const tfootTotal = document.getElementById('tfoot-total-docs');
+      const tfootPct = document.getElementById('tfoot-total-pct');
+      tbody.innerHTML = '';
+      currentExportSaip = [];
+
+      let sortedKeys = Object.keys(areasDict).sort((a, b) => areasDict[b] - areasDict[a]);
+
+      if (sortedKeys.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No hay registros para el filtro seleccionado.</td></tr>`;
+        tfootTotal.innerText = '0';
+        tfootPct.innerText = '0%';
+        return;
+      }
+
+      let sumaAcumuladaDocs = 0;
+
+      sortedKeys.forEach((key, index) => {
+        let [areaName, detalleAccion, mesYear] = key.split('||');
+        let cantidad = areasDict[key];
+        sumaAcumuladaDocs += cantidad;
+        let pct = totalGeneral > 0 ? ((cantidad / totalGeneral) * 100).toFixed(1) : 0;
+
+        currentExportSaip.push({
+          "N°": index + 1,
+          "Unidad Orgánica / Área": areaName,
+          "Acción / Detalle": detalleAccion,
+          "Periodo (Año - Mes)": mesYear,
+          "Cantidad Documentos": cantidad,
+          "% Participación": `${pct}%`
+        });
+
+        let row = document.createElement('tr');
+        row.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+        row.innerHTML = `
+          <td class="py-2.5 px-3 font-semibold text-slate-400">${index + 1}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-800">${areaName}</td>
+          <td class="py-2.5 px-3"><span class="inline-block px-2 py-0.5 rounded text-[11px] font-semibold border bg-slate-100 text-slate-700">${detalleAccion}</span></td>
+          <td class="py-2.5 px-3 text-slate-500">${mesYear}</td>
+          <td class="py-2.5 px-3 text-center font-extrabold text-blue-750 bg-blue-50/50 rounded-lg">${cantidad}</td>
+          <td class="py-2.5 px-3 text-right font-medium text-slate-600">${pct}%</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      tfootTotal.innerText = sumaAcumuladaDocs;
+      tfootPct.innerText = totalGeneral > 0 ? '100%' : '0%';
+    }
+
+    function filterTableArea() {
+      const input = document.getElementById('searchArea').value.toUpperCase();
+      const trs = document.getElementById('tbody-areas').getElementsByTagName('tr');
+      for (let i = 0; i < trs.length; i++) {
+        const areaTd = trs[i].getElementsByTagName('td')[1];
+        const detalleTd = trs[i].getElementsByTagName('td')[2];
+        if (areaTd || detalleTd) {
+          const areaText = areaTd ? (areaTd.textContent || areaTd.innerText) : '';
+          const detalleText = detalleTd ? (detalleTd.textContent || detalleTd.innerText) : '';
+          trs[i].style.display = (areaText.toUpperCase().indexOf(input) > -1 || detalleText.toUpperCase().indexOf(input) > -1) ? "" : "none";
+        }
+      }
+    }
+
+    function exportSaipToExcelXLSX() {
+      if (currentExportSaip.length === 0) return alert("No hay datos cargados.");
+      const year = document.getElementById('filterYearArchivo').value;
+      const month = document.getElementById('filterMonthArchivo').value;
+      const worksheet = XLSX.utils.json_to_sheet(currentExportSaip);
+      worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 25 }, { wch: 18 }, { wch: 20 }, { wch: 18 }];
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Consolidado_SAIP");
+      XLSX.writeFile(workbook, `Consolidado_SAIP_OACGD_${year}_${month}.xlsx`);
+    }
+
+    function downloadChartImage(chartId, fileName) {
+      const chartCanvas = document.getElementById(chartId);
+      if (!chartCanvas) return;
+      const imageURI = chartCanvas.toDataURL('image/png', 1.0);
+      const link = document.createElement('a');
+      link.download = fileName;
+      link.href = imageURI;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
