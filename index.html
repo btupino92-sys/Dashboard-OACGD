@@ -146,7 +146,7 @@
             <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-prom-tiempo-servicio">0</div>
-          <p class="text-xs text-slate-400 mt-1">Tiempo promedio por solicitud (Col. F)</p>
+          <p class="text-xs text-slate-400 mt-1">Horas promedio por solicitud (Col. F)</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -155,7 +155,7 @@
             <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-stopwatch"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-purple-600 mt-2" id="kpi-prom-tiempo-doc">0</div>
-          <p class="text-xs text-purple-500 mt-1 font-semibold">Tiempo Col. F / Col. C</p>
+          <p class="text-xs text-purple-500 mt-1 font-semibold">Horas promedio por documento</p>
         </div>
       </div>
 
@@ -589,8 +589,8 @@
       let totalDocs = 0;
       let totalImagenes = 0;
       
-      let sumMetricaTiempo = 0; // Suma de los tiempos de la Columna F
-      let countTiempos = 0;     // Conteo para promediar la Columna F entre servicios
+      let sumMetricaTiempo = 0; // Suma total de horas (Columna F)
+      let countTiempos = 0;     // Cantidad de registros con tiempo válido
       
       let sumTiemposPorDoc = 0; // Acumulador para el promedio de tiempo por documento (Col F / Col C)
       let countTiemposPorDoc = 0;
@@ -602,7 +602,18 @@
         const valSolicitudId = getFieldValue(r, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
         const valDocsStr = getFieldValue(r, ['Nª DE DOC', 'N° DE DOC', 'CANTIDAD', 'DOCUMENTOS']);
         const valImgsStr = getFieldValue(r, ['IMAGENES', 'IMÁGENES', 'FOLIOS']);
-        const valMetricaStr = getFieldValue(r, ['METRICA', 'MÉTRICA', 'NIVEL', 'TIEMPO', 'TIEMPO DE ATENCION']);
+        
+        // Buscamos explícitamente en la columna F o nombres equivalentes de tiempo/métrica
+        const keys = Object.keys(r);
+        let valMetricaStr = '';
+        if (keys.length >= 6) {
+          // Tomamos directamente la columna F (índice 5) si existe
+          valMetricaStr = r[keys[5]] !== undefined ? r[keys[5]] : '';
+        }
+        if (!valMetricaStr || String(valMetricaStr).trim() === '') {
+          valMetricaStr = getFieldValue(r, ['METRICA', 'MÉTRICA', 'TIEMPO', 'TIEMPO DE ATENCION', 'HORAS']);
+        }
+
         const condicion = getFieldValue(r, ['CONDICIÓN DE SERVICIO', 'CONDICION DE SERVICIO', 'CONDICION']).toUpperCase() || 'OTROS';
         const oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA']).toUpperCase() || 'SIN OFICINA';
 
@@ -617,7 +628,7 @@
         let valImgs = parseFloat(String(valImgsStr).replace(',', '.'));
         if (isNaN(valImgs) || valImgs < 0) valImgs = 0;
 
-        // Lectura del tiempo en la Columna F
+        // Limpieza y conversión del tiempo (ej: 1, 0.5, etc.)
         let valMetrica = parseFloat(String(valMetricaStr).replace(',', '.'));
         if (!isNaN(valMetrica) && valMetrica > 0) {
           sumMetricaTiempo += valMetrica;
@@ -657,10 +668,11 @@
       const promDocsPorServicio = totalServicios > 0 ? (totalDocs / totalServicios).toFixed(1) : '0.0';
       const promImgsPorDoc = totalDocs > 0 ? (totalImagenes / totalDocs).toFixed(1) : '0.0';
       
-      // Promedio de tiempo por servicio (Suma de Col F / Cantidad de registros válidos de tiempo)
-      const promTiempoPorServicio = countTiempos > 0 ? (sumMetricaTiempo / countTiempos).toFixed(1) : '0.0';
+      // Promedio de tiempo por servicio (Suma total de horas de la Columna F / Total de Servicios únicos o registros)
+      const divisorServicios = totalServicios > 0 ? totalServicios : (countTiempos > 0 ? countTiempos : 1);
+      const promTiempoPorServicio = (sumMetricaTiempo / divisorServicios).toFixed(2);
       
-      // Promedio de tiempo por documento (Promedio de las divisiones de Col F entre Col C)
+      // Promedio de tiempo por documento (Suma de tiempos divididos entre documentos / cantidad)
       const promTiempoPorDoc = countTiemposPorDoc > 0 ? (sumTiemposPorDoc / countTiemposPorDoc).toFixed(2) : '0.00';
 
       document.getElementById('kpi-total-servicios').innerText = totalServicios;
@@ -670,8 +682,8 @@
       document.getElementById('kpi-prom-docs-servicio').innerText = `${promDocsPorServicio} docs / servicio`;
       document.getElementById('kpi-prom-imgs-doc').innerText = `${promImgsPorDoc} imágenes / doc`;
 
-      document.getElementById('kpi-prom-tiempo-servicio').innerText = promTiempoPorServicio;
-      document.getElementById('kpi-prom-tiempo-doc').innerText = promTiempoPorDoc;
+      document.getElementById('kpi-prom-tiempo-servicio').innerText = `${promTiempoPorServicio} hrs`;
+      document.getElementById('kpi-prom-tiempo-doc').innerText = `${promTiempoPorDoc} hrs`;
 
       renderChartsArchivo(condicionesMap, oficinasMap);
       renderTableOficinasArchivo(oficinasMap, totalServicios);
