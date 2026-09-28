@@ -119,7 +119,7 @@
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-servicios">0</div>
-          <p class="text-xs text-slate-400 mt-1">Solicitudes recibidas</p>
+          <p class="text-xs text-slate-400 mt-1">Solicitudes únicas ingresadas</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -582,7 +582,8 @@
     }
 
     function updateArchivoDashboard(data) {
-      const totalServicios = data.length;
+      // Conteo real de solicitudes únicas basadas en la Columna A (ej. N° de Solicitud / ID)
+      let solicitudesUnicas = new Set();
       let totalDocs = 0;
       let totalImagenes = 0;
       let sumMetricaTiempo = 0;
@@ -592,11 +593,16 @@
       let oficinasMap = {};
 
       data.forEach(r => {
+        const valSolicitudId = getFieldValue(r, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
         const valDocsStr = getFieldValue(r, ['Nª DE DOC', 'N° DE DOC', 'CANTIDAD', 'DOCUMENTOS']);
         const valImgsStr = getFieldValue(r, ['IMAGENES', 'IMÁGENES', 'FOLIOS']);
         const valMetricaStr = getFieldValue(r, ['METRICA', 'MÉTRICA', 'NIVEL', 'TIEMPO']);
         const condicion = getFieldValue(r, ['CONDICIÓN DE SERVICIO', 'CONDICION DE SERVICIO', 'CONDICION']).toUpperCase() || 'OTROS';
         const oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA']).toUpperCase() || 'SIN OFICINA';
+
+        if (valSolicitudId !== '') {
+          solicitudesUnicas.add(valSolicitudId);
+        }
 
         let valDocs = parseFloat(String(valDocsStr).replace(',', '.'));
         if (isNaN(valDocs) || valDocs < 0) valDocs = 0;
@@ -622,6 +628,9 @@
         oficinasMap[oficina].docs += valDocs;
         oficinasMap[oficina].imgs += valImgs;
       });
+
+      // Si por alguna razón la columna A viniera vacía en el CSV, respaldamos con el total de filas para evitar 0
+      const totalServicios = solicitudesUnicas.size > 0 ? solicitudesUnicas.size : data.length;
 
       const promDocsPorServicio = totalServicios > 0 ? (totalDocs / totalServicios).toFixed(1) : '0.0';
       const promImgsPorDoc = totalDocs > 0 ? (totalImagenes / totalDocs).toFixed(1) : '0.0';
@@ -1029,7 +1038,7 @@
           <td class="py-2.5 px-3 font-bold text-slate-800">${areaName}</td>
           <td class="py-2.5 px-3"><span class="inline-block px-2 py-0.5 rounded text-[11px] font-semibold border bg-slate-100 text-slate-700">${detalleAccion}</span></td>
           <td class="py-2.5 px-3 text-slate-500">${mesYear}</td>
-          <td class="py-2.5 px-3 text-center font-extrabold text-blue-700 bg-blue-50/50 rounded-lg">${cantidad}</td>
+          <td class="py-2.5 px-3 text-center font-extrabold text-blue-750 bg-blue-50/50 rounded-lg">${cantidad}</td>
           <td class="py-2.5 px-3 text-right font-medium text-slate-600">${pct}%</td>
         `;
         tbody.appendChild(row);
@@ -1055,8 +1064,8 @@
 
     function exportSaipToExcelXLSX() {
       if (currentExportSaip.length === 0) return alert("No hay datos cargados.");
-      const year = document.getElementById('filterYearSaip').value;
-      const month = document.getElementById('filterMonthSaip').value;
+      const year = document.getElementById('filterYearArchivo').value;
+      const month = document.getElementById('filterMonthArchivo').value;
       const worksheet = XLSX.utils.json_to_sheet(currentExportSaip);
       worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 25 }, { wch: 18 }, { wch: 20 }, { wch: 18 }];
       const workbook = XLSX.utils.book_new();
