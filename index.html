@@ -146,7 +146,7 @@
             <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-prom-tiempo-servicio">0</div>
-          <p class="text-xs text-slate-400 mt-1">Tiempo promedio por solicitud</p>
+          <p class="text-xs text-slate-400 mt-1">Tiempo promedio por solicitud (Col. F)</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -155,7 +155,7 @@
             <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-stopwatch"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-purple-600 mt-2" id="kpi-prom-tiempo-doc">0</div>
-          <p class="text-xs text-purple-500 mt-1 font-semibold">Tiempo promedio por documento</p>
+          <p class="text-xs text-purple-500 mt-1 font-semibold">Tiempo Col. F / Col. C</p>
         </div>
       </div>
 
@@ -552,7 +552,6 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          // Filtramos únicamente filas que tengan un número válido en la columna A para evitar filas vacías al final
           rawArchivoData = results.data.filter(row => {
             const valId = getFieldValue(row, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
             return valId !== '' && !isNaN(parseInt(valId, 10));
@@ -589,8 +588,12 @@
       let maxSolicitudNum = 0;
       let totalDocs = 0;
       let totalImagenes = 0;
-      let sumMetricaTiempo = 0;
-      let countTiempos = 0;
+      
+      let sumMetricaTiempo = 0; // Suma de los tiempos de la Columna F
+      let countTiempos = 0;     // Conteo para promediar la Columna F entre servicios
+      
+      let sumTiemposPorDoc = 0; // Acumulador para el promedio de tiempo por documento (Col F / Col C)
+      let countTiemposPorDoc = 0;
 
       let condicionesMap = {};
       let oficinasMap = {};
@@ -599,7 +602,7 @@
         const valSolicitudId = getFieldValue(r, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
         const valDocsStr = getFieldValue(r, ['Nª DE DOC', 'N° DE DOC', 'CANTIDAD', 'DOCUMENTOS']);
         const valImgsStr = getFieldValue(r, ['IMAGENES', 'IMÁGENES', 'FOLIOS']);
-        const valMetricaStr = getFieldValue(r, ['METRICA', 'MÉTRICA', 'NIVEL', 'TIEMPO']);
+        const valMetricaStr = getFieldValue(r, ['METRICA', 'MÉTRICA', 'NIVEL', 'TIEMPO', 'TIEMPO DE ATENCION']);
         const condicion = getFieldValue(r, ['CONDICIÓN DE SERVICIO', 'CONDICION DE SERVICIO', 'CONDICION']).toUpperCase() || 'OTROS';
         const oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA']).toUpperCase() || 'SIN OFICINA';
 
@@ -614,10 +617,18 @@
         let valImgs = parseFloat(String(valImgsStr).replace(',', '.'));
         if (isNaN(valImgs) || valImgs < 0) valImgs = 0;
 
+        // Lectura del tiempo en la Columna F
         let valMetrica = parseFloat(String(valMetricaStr).replace(',', '.'));
         if (!isNaN(valMetrica) && valMetrica > 0) {
           sumMetricaTiempo += valMetrica;
           countTiempos++;
+
+          // Cálculo del tiempo por documento dividiendo Columna F / Columna C (valDocs)
+          if (valDocs > 0) {
+            let tiempoPorDocFila = valMetrica / valDocs;
+            sumTiemposPorDoc += tiempoPorDocFila;
+            countTiemposPorDoc++;
+          }
         }
 
         totalDocs += valDocs;
@@ -645,8 +656,12 @@
 
       const promDocsPorServicio = totalServicios > 0 ? (totalDocs / totalServicios).toFixed(1) : '0.0';
       const promImgsPorDoc = totalDocs > 0 ? (totalImagenes / totalDocs).toFixed(1) : '0.0';
+      
+      // Promedio de tiempo por servicio (Suma de Col F / Cantidad de registros válidos de tiempo)
       const promTiempoPorServicio = countTiempos > 0 ? (sumMetricaTiempo / countTiempos).toFixed(1) : '0.0';
-      const promTiempoPorDoc = totalDocs > 0 ? (sumMetricaTiempo / totalDocs).toFixed(2) : '0.00';
+      
+      // Promedio de tiempo por documento (Promedio de las divisiones de Col F entre Col C)
+      const promTiempoPorDoc = countTiemposPorDoc > 0 ? (sumTiemposPorDoc / countTiemposPorDoc).toFixed(2) : '0.00';
 
       document.getElementById('kpi-total-servicios').innerText = totalServicios;
       document.getElementById('kpi-total-docs-archivo').innerText = totalDocs.toLocaleString();
@@ -1075,7 +1090,7 @@
 
     function exportSaipToExcelXLSX() {
       if (currentExportSaip.length === 0) return alert("No hay datos cargados.");
-      const year = document.getElementById('filterYearSaip').value;
+      const year = document.getElementById('filterYearArchivo').value;
       const month = document.getElementById('filterMonthArchivo').value;
       const worksheet = XLSX.utils.json_to_sheet(currentExportSaip);
       worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 25 }, { wch: 18 }, { wch: 20 }, { wch: 18 }];
