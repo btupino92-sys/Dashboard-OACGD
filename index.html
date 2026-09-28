@@ -425,7 +425,7 @@
       </div>
     </section>
 
-    <!-- 5. SECCIÓN MENSAJERÍA (ACTUALIZADA CON NUEVOS INDICADORES) -->
+    <!-- 5. SECCIÓN MENSAJERÍA (ACTUALIZADA CON NUEVOS INDICADORES Y GRÁFICO SINCRONIZADO) -->
     <section id="sec-mensajeria" class="space-y-6">
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
@@ -471,7 +471,7 @@
         </div>
       </div>
 
-      <!-- Tarjetas KPI Mensajería (Actualizadas a 5 tarjetas) -->
+      <!-- Tarjetas KPI Mensajería (5 tarjetas) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
           <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
@@ -524,7 +524,7 @@
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow relative">
           <div class="flex justify-between items-center mb-4">
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-chart-pie text-teal-600"></i> Distribución de Estados de Documentos (Col. L)
+              <i class="fa-solid fa-chart-pie text-teal-600"></i> Distribución de Estados de Documentos (Indicadores)
             </h3>
             <button onclick="downloadChartImage('chartEstadoMensajeria', 'Grafico_Estado_Mensajeria.png')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium flex items-center gap-1 transition no-print">
               <i class="fa-solid fa-image text-teal-600"></i> Descargar Gráfico
@@ -711,13 +711,11 @@
       return '';
     }
 
-    // Parser robusto para fechas en formato peruano, ISO u otros
     function parseDatePeruvian(dateStr) {
       if (!dateStr || typeof dateStr !== 'string') return null;
       let clean = dateStr.trim();
       if (!clean) return null;
 
-      // 1. Formato YYYY-MM-DD o YYYY/MM/DD
       let matchIso = clean.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
       if (matchIso) {
         let year = parseInt(matchIso[1], 10);
@@ -728,7 +726,6 @@
         }
       }
 
-      // 2. Formato DD/MM/YYYY o DD-MM-YYYY
       let matchLat = clean.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})/);
       if (matchLat) {
         let day = parseInt(matchLat[1], 10);
@@ -740,14 +737,12 @@
         }
       }
 
-      // 3. Intento de detección por año de 4 dígitos si hay texto
       let matchYear = clean.match(/\b(20\d{2})\b/);
       if (matchYear) {
         let year = parseInt(matchYear[1], 10);
         return new Date(year, 0, 1);
       }
 
-      // 4. Intento de Parse nativo
       let jsDate = new Date(clean);
       if (!isNaN(jsDate.getTime())) return jsDate;
 
@@ -763,7 +758,7 @@
     }
 
     // ==========================================
-    // 1. ARCHIVO CENTRAL (SIN MODIFICACIONES)
+    // 1. ARCHIVO CENTRAL
     // ==========================================
     function fetchArchivoData() {
       Papa.parse(ARCHIVO_SHEET_URL, {
@@ -1026,7 +1021,7 @@
     }
 
     // ==========================================
-    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP - SIN MODIFICACIONES)
+    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP)
     // ==========================================
     function fetchSaipData() {
       Papa.parse(SAIP_SHEET_URL, {
@@ -1356,7 +1351,6 @@
       let noDistribuidoObservado = 0; // "Motivo"
       let noDistribuidoPerdida = 0;   // "No distribuido"
 
-      let estadosMap = {};
       let oficinasMap = {};
       let departamentoDestinoMap = {};
 
@@ -1365,24 +1359,21 @@
         const departamento = (getFieldValue(r, ['DEPARTAMENTO', 'DEPARTAMENTO DESTINO', 'DESTINO', 'LUGAR DE DESTINO']) || getFieldValueByIndex(r, 6)).toUpperCase() || 'LIMA / OTROS';
         const estadoRaw = (getFieldValue(r, ['ESTADO', 'ESTADO DEL DOCUMENTO', 'SITUACION', 'SITUACIÓN', 'CONDICION', 'CONDICIÓN']) || getFieldValueByIndex(r, 11)).toUpperCase();
 
-        let estadoCategoria = 'EN GESTIÓN / PARA DESPACHO';
+        let estadoCategoria = 'En Gestión / Despacho';
 
         if (estadoRaw.includes('ENTREGADO')) {
-          estadoCategoria = 'ENTREGADO';
+          estadoCategoria = 'Entregados';
           entregados++;
         } else if (estadoRaw.includes('MOTIVO')) {
-          estadoCategoria = 'No distribuido (documento observado)';
+          estadoCategoria = 'No distribuido (doc. observado)';
           noDistribuidoObservado++;
         } else if (estadoRaw.includes('NO DISTRIBUIDO') || estadoRaw.includes('PERDIDO')) {
-          estadoCategoria = 'No distribuido (pérdida de documento)';
+          estadoCategoria = 'No distribuido (pérdida de doc.)';
           noDistribuidoPerdida++;
         } else {
-          estadoCategoria = 'EN GESTIÓN / PARA DESPACHO';
+          estadoCategoria = 'En Gestión / Despacho';
           enGestionDespacho++;
         }
-
-        const estadoLabelPie = estadoRaw !== '' ? estadoRaw : 'EN GESTIÓN / PARA DESPACHO';
-        estadosMap[estadoLabelPie] = (estadosMap[estadoLabelPie] || 0) + 1;
 
         if (departamento !== 'SIN ESPECIFICAR') {
           departamentoDestinoMap[departamento] = (departamentoDestinoMap[departamento] || 0) + 1;
@@ -1393,16 +1384,24 @@
         }
         oficinasMap[oficina].total++;
 
-        if (estadoCategoria === 'ENTREGADO') {
+        if (estadoCategoria === 'Entregados') {
           oficinasMap[oficina].entregados++;
-        } else if (estadoCategoria === 'No distribuido (documento observado)') {
+        } else if (estadoCategoria === 'No distribuido (doc. observado)') {
           oficinasMap[oficina].observado++;
-        } else if (estadoCategoria === 'No distribuido (pérdida de documento)') {
+        } else if (estadoCategoria === 'No distribuido (pérdida de doc.)') {
           oficinasMap[oficina].perdida++;
         } else {
           oficinasMap[oficina].gestion++;
         }
       });
+
+      // Mapeo sincronizado con los nombres y números exactos de los indicadores superiores
+      let estadosMap = {
+        'Entregados': entregados,
+        'En Gestión / Despacho': enGestionDespacho,
+        'No distribuido (doc. observado)': noDistribuidoObservado,
+        'No distribuido (pérdida de doc.)': noDistribuidoPerdida
+      };
 
       const pctEntregados = total > 0 ? ((entregados / total) * 100).toFixed(1) : '0.0';
       const pctGestion = total > 0 ? ((enGestionDespacho / total) * 100).toFixed(1) : '0.0';
@@ -1435,7 +1434,7 @@
           labels: Object.keys(estadosMap),
           datasets: [{
             data: Object.values(estadosMap),
-            backgroundColor: ['#10b981', '#f59e0b', '#f43f5e', '#8b5cf6', '#3b82f6', '#64748b', '#06b6d4']
+            backgroundColor: ['#10b981', '#f59e0b', '#f43f5e', '#8b5cf6']
           }]
         },
         options: {
@@ -1583,7 +1582,6 @@
       XLSX.writeFile(workbook, `Consolidado_Mensajeria_${year}_${month}.xlsx`);
     }
 
-    // Funciones comunes de descarga de gráficos
     function downloadChartImage(canvasId, filename) {
       const canvas = document.getElementById(canvasId);
       if (!canvas) return;
