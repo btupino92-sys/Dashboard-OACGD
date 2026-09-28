@@ -69,8 +69,8 @@
     <section id="sec-archivo" class="space-y-6">
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
-          <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Servicios Archivísticos - Archivo Central</h2>
-          <p class="text-xs text-slate-500">Monitoreo de Solicitudes, Documentos Gestionados, Folios/Imágenes y Tiempos de Atención</p>
+          <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Servicios Archivísticos - Archivo Central (Servicios + Informes SGD)</h2>
+          <p class="text-xs text-slate-500">Monitoreo consolidado de solicitudes de formularios y registros del SGD</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
@@ -105,7 +105,7 @@
             </select>
           </div>
 
-          <button onclick="fetchArchivoData()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded transition font-medium flex items-center gap-1">
+          <button onclick="fetchAllArchivoData()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded transition font-medium flex items-center gap-1">
             <i class="fa-solid fa-rotate"></i> Actualizar
           </button>
         </div>
@@ -119,7 +119,7 @@
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-servicios">0</div>
-          <p class="text-xs text-slate-400 mt-1">Total registros (Col. A)</p>
+          <p class="text-xs text-slate-400 mt-1">Servicios + Informes SGD</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -146,7 +146,7 @@
             <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-prom-tiempo-servicio">0</div>
-          <p class="text-xs text-slate-400 mt-1">Horas promedio por solicitud (Col. F)</p>
+          <p class="text-xs text-slate-400 mt-1">Horas promedio por solicitud</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -195,9 +195,9 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-building text-amber-600"></i> Consolidado de Solicitudes por Oficina Solicitante
+              <i class="fa-solid fa-building text-amber-600"></i> Consolidado de Solicitudes por Oficina Solicitante y Origen
             </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Sincronizado dinámicamente con los Filtros de Archivo Central</p>
+            <p class="text-xs text-slate-500 mt-0.5">Diferencia automática entre Formulario de Servicios y SGD - Informes</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2 no-print">
@@ -210,7 +210,7 @@
             </button>
 
             <div class="relative">
-              <input type="text" id="searchOficinaArchivo" onkeyup="filterTableOficinaArchivo()" placeholder="Buscar Oficina..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-amber-500 w-full sm:w-48">
+              <input type="text" id="searchOficinaArchivo" onkeyup="filterTableOficinaArchivo()" placeholder="Buscar Oficina u Origen..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-amber-500 w-full sm:w-48">
               <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-2.5 top-2.5"></i>
             </div>
           </div>
@@ -222,6 +222,7 @@
               <tr class="bg-slate-800 text-white uppercase text-[10px] tracking-wider sticky top-0 z-10">
                 <th class="py-2.5 px-3 border border-slate-700">#</th>
                 <th class="py-2.5 px-3 border border-slate-700">Unidad Orgánica / Oficina Solicitante</th>
+                <th class="py-2.5 px-3 border border-slate-700">Origen de Ingreso</th>
                 <th class="py-2.5 px-3 border border-slate-700 text-center">N° Servicios</th>
                 <th class="py-2.5 px-3 border border-slate-700 text-center">Total Docs</th>
                 <th class="py-2.5 px-3 border border-slate-700 text-center">Total Imágenes</th>
@@ -232,7 +233,7 @@
             </tbody>
             <tfoot class="bg-slate-900 text-white font-bold text-xs sticky bottom-0 z-10 border-t-2 border-slate-700">
               <tr>
-                <td colspan="2" class="py-3 px-3 uppercase tracking-wider text-right border border-slate-800">
+                <td colspan="3" class="py-3 px-3 uppercase tracking-wider text-right border border-slate-800">
                   <i class="fa-solid fa-calculator mr-1.5 text-amber-400"></i> Totales Consolidados:
                 </td>
                 <td class="py-3 px-3 text-center text-sm font-extrabold text-amber-300 bg-slate-800 border border-slate-800" id="tfoot-archivo-servicios">0</td>
@@ -462,9 +463,12 @@
   </main>
 
   <script>
-    // URLs de exportación CSV
+    // URLs de exportación CSV (puedes ajustar o usar el mismo ID de hoja separando por gid si son pestañas distintas)
     const SAIP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/10dbxxD902fn7seizSeShVYtOiZQc1KCFBPpnbmo7tCU/export?format=csv';
-    const ARCHIVO_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?output=csv';
+    
+    // URL principal para "servicios" y puedes duplicar/adaptar o unificar si publícas ambas pestañas
+    const SERVICIOS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?output=csv&gid=0';
+    const INFORMES_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?output=csv&gid=123456789'; // Reemplaza gid con el de tu pestaña "servicios informes"
 
     const MESES_NOMBRES = {
       '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril',
@@ -479,7 +483,8 @@
     let chartModalidadObj = null;
     let feriadosSet = new Set();
 
-    let rawArchivoData = [];
+    let rawServiciosData = [];
+    let rawInformesData = [];
     let currentExportArchivo = [];
     let chartCondicionArchivoObj = null;
     let chartOficinasArchivoObj = null;
@@ -487,7 +492,7 @@
     Chart.register(ChartDataLabels);
 
     document.addEventListener("DOMContentLoaded", () => {
-      fetchArchivoData();
+      fetchAllArchivoData();
       fetchSaipData();
     });
 
@@ -544,19 +549,45 @@
     }
 
     // ==========================================
-    // 1. ARCHIVO CENTRAL
+    // 1. ARCHIVO CENTRAL (CARGA Y CONSOLIDACIÓN)
     // ==========================================
-    function fetchArchivoData() {
-      Papa.parse(ARCHIVO_SHEET_URL, {
+    function fetchAllArchivoData() {
+      // Cargamos la pestaña "servicios" (Formulario)
+      Papa.parse(SERVICIOS_SHEET_URL, {
         download: true,
         header: true,
         skipEmptyLines: true,
-        complete: function(results) {
-          rawArchivoData = results.data.filter(row => {
+        complete: function(resultsServ) {
+          rawServiciosData = resultsServ.data.map(row => {
+            row._origenLabel = "SERVICIOS (FORMULARIO)";
+            return row;
+          }).filter(row => {
             const valId = getFieldValue(row, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
             return valId !== '' && !isNaN(parseInt(valId, 10));
           });
-          applyFiltersArchivo();
+
+          // Cargamos la pestaña "servicios informes" (SGD)
+          Papa.parse(INFORMES_SHEET_URL, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(resultsInf) {
+              rawInformesData = resultsInf.data.map(row => {
+                row._origenLabel = "SGD - INFORMES";
+                return row;
+              }).filter(row => {
+                const valId = getFieldValue(row, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
+                return valId !== '' && !isNaN(parseInt(valId, 10));
+              });
+
+              applyFiltersArchivo();
+            },
+            error: function() {
+              // Si falla la segunda URL, procesamos al menos la primera para que no rompa el dashboard
+              rawInformesData = [];
+              applyFiltersArchivo();
+            }
+          });
         }
       });
     }
@@ -565,7 +596,7 @@
       const selectedYear = document.getElementById('filterYearArchivo').value;
       const selectedMonth = document.getElementById('filterMonthArchivo').value.toUpperCase();
 
-      let filtered = rawArchivoData.filter(row => {
+      const filterLogic = row => {
         const mesRow = getFieldValue(row, ['MES', 'Mes']).toUpperCase();
         const fechaPrest = getFieldValue(row, ['DIA PREST.', 'DIA PREST', 'FECHA']);
         
@@ -579,35 +610,38 @@
         if (selectedMonth !== 'ALL' && !mesRow.includes(selectedMonth)) return false;
 
         return true;
-      });
+      };
 
-      updateArchivoDashboard(filtered);
+      let filteredServicios = rawServiciosData.filter(filterLogic);
+      let filteredInformes = rawInformesData.filter(filterLogic);
+
+      // Fusionamos ambos conjuntos de datos para el tablero general del Archivo Central
+      let combinedData = filteredServicios.concat(filteredInformes);
+      updateArchivoDashboard(combinedData);
     }
 
     function updateArchivoDashboard(data) {
-      let maxSolicitudNum = 0;
       let totalDocs = 0;
       let totalImagenes = 0;
       
-      let sumMetricaTiempo = 0; // Suma total de horas (Columna F)
-      let countTiempos = 0;     // Cantidad de registros con tiempo válido
+      let sumMetricaTiempo = 0; 
+      let countTiempos = 0;     
       
-      let sumTiemposPorDoc = 0; // Acumulador para el promedio de tiempo por documento (Col F / Col C)
+      let sumTiemposPorDoc = 0; 
       let countTiemposPorDoc = 0;
 
       let condicionesMap = {};
-      let oficinasMap = {};
+      let oficinasOrigenMap = {}; // Agrupado por Oficina + Origen para diferenciarlos en la tabla
+      let setServiciosGlobal = new Set();
 
       data.forEach(r => {
         const valSolicitudId = getFieldValue(r, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
         const valDocsStr = getFieldValue(r, ['Nª DE DOC', 'N° DE DOC', 'CANTIDAD', 'DOCUMENTOS']);
         const valImgsStr = getFieldValue(r, ['IMAGENES', 'IMÁGENES', 'FOLIOS']);
         
-        // Buscamos explícitamente en la columna F o nombres equivalentes de tiempo/métrica
         const keys = Object.keys(r);
         let valMetricaStr = '';
         if (keys.length >= 6) {
-          // Tomamos directamente la columna F (índice 5) si existe
           valMetricaStr = r[keys[5]] !== undefined ? r[keys[5]] : '';
         }
         if (!valMetricaStr || String(valMetricaStr).trim() === '') {
@@ -616,11 +650,7 @@
 
         const condicion = getFieldValue(r, ['CONDICIÓN DE SERVICIO', 'CONDICION DE SERVICIO', 'CONDICION']).toUpperCase() || 'OTROS';
         const oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA']).toUpperCase() || 'SIN OFICINA';
-
-        let numParsed = parseInt(String(valSolicitudId).trim(), 10);
-        if (!isNaN(numParsed) && numParsed > maxSolicitudNum) {
-          maxSolicitudNum = numParsed;
-        }
+        const origen = r._origenLabel || 'SERVICIOS (FORMULARIO)';
 
         let valDocs = parseFloat(String(valDocsStr).replace(',', '.'));
         if (isNaN(valDocs) || valDocs < 0) valDocs = 0;
@@ -628,13 +658,11 @@
         let valImgs = parseFloat(String(valImgsStr).replace(',', '.'));
         if (isNaN(valImgs) || valImgs < 0) valImgs = 0;
 
-        // Limpieza y conversión del tiempo (ej: 1, 0.5, etc.)
         let valMetrica = parseFloat(String(valMetricaStr).replace(',', '.'));
         if (!isNaN(valMetrica) && valMetrica > 0) {
           sumMetricaTiempo += valMetrica;
           countTiempos++;
 
-          // Cálculo del tiempo por documento dividiendo Columna F / Columna C (valDocs)
           if (valDocs > 0) {
             let tiempoPorDocFila = valMetrica / valDocs;
             sumTiemposPorDoc += tiempoPorDocFila;
@@ -647,32 +675,43 @@
 
         condicionesMap[condicion] = (condicionesMap[condicion] || 0) + 1;
 
-        if (!oficinasMap[oficina]) {
-          oficinasMap[oficina] = { serviciosSet: new Set(), servicios: 0, docs: 0, imgs: 0 };
+        // Llave única compuesta para diferenciar en la tabla de abajo: Oficina + Origen
+        let claveOficinaOrigen = `${oficina}|||${origen}`;
+
+        if (!oficinasOrigenMap[claveOficinaOrigen]) {
+          oficinasOrigenMap[claveOficinaOrigen] = { 
+            oficinaName: oficina, 
+            origenLabel: origen, 
+            serviciosSet: new Set(), 
+            servicios: 0, 
+            docs: 0, 
+            imgs: 0 
+          };
         }
         
-        oficinasMap[oficina].docs += valDocs;
-        oficinasMap[oficina].imgs += valImgs;
+        oficinasOrigenMap[claveOficinaOrigen].docs += valDocs;
+        oficinasOrigenMap[claveOficinaOrigen].imgs += valImgs;
 
         if (valSolicitudId !== '') {
-          oficinasMap[oficina].serviciosSet.add(String(valSolicitudId).trim());
+          let uniqueIdStr = `${origen}-${String(valSolicitudId).trim()}`;
+          setServiciosGlobal.add(uniqueIdStr);
+          oficinasOrigenMap[claveOficinaOrigen].serviciosSet.add(String(valSolicitudId).trim());
         }
       });
 
-      Object.keys(oficinasMap).forEach(ofi => {
-        oficinasMap[ofi].servicios = oficinasMap[ofi].serviciosSet.size > 0 ? oficinasMap[ofi].serviciosSet.size : 1;
+      // Calculamos los servicios por cada grupo Oficina + Origen
+      Object.keys(oficinasOrigenMap).forEach(key => {
+        let item = oficinasOrigenMap[key];
+        item.servicios = item.serviciosSet.size > 0 ? item.serviciosSet.size : 1;
       });
 
-      const totalServicios = maxSolicitudNum > 0 ? maxSolicitudNum : data.length;
+      const totalServicios = setServiciosGlobal.size > 0 ? setServiciosGlobal.size : data.length;
 
       const promDocsPorServicio = totalServicios > 0 ? (totalDocs / totalServicios).toFixed(1) : '0.0';
       const promImgsPorDoc = totalDocs > 0 ? (totalImagenes / totalDocs).toFixed(1) : '0.0';
       
-      // Promedio de tiempo por servicio (Suma total de horas de la Columna F / Total de Servicios únicos o registros)
       const divisorServicios = totalServicios > 0 ? totalServicios : (countTiempos > 0 ? countTiempos : 1);
       const promTiempoPorServicio = (sumMetricaTiempo / divisorServicios).toFixed(2);
-      
-      // Promedio de tiempo por documento (Suma de tiempos divididos entre documentos / cantidad)
       const promTiempoPorDoc = countTiemposPorDoc > 0 ? (sumTiemposPorDoc / countTiemposPorDoc).toFixed(2) : '0.00';
 
       document.getElementById('kpi-total-servicios').innerText = totalServicios;
@@ -685,11 +724,11 @@
       document.getElementById('kpi-prom-tiempo-servicio').innerText = `${promTiempoPorServicio} hrs`;
       document.getElementById('kpi-prom-tiempo-doc').innerText = `${promTiempoPorDoc} hrs`;
 
-      renderChartsArchivo(condicionesMap, oficinasMap);
-      renderTableOficinasArchivo(oficinasMap, totalServicios);
+      renderChartsArchivo(condicionesMap, oficinasOrigenMap);
+      renderTableOficinasArchivo(oficinasOrigenMap, totalServicios);
     }
 
-    function renderChartsArchivo(condicionesMap, oficinasMap) {
+    function renderChartsArchivo(condicionesMap, oficinasOrigenMap) {
       const totalCond = Object.values(condicionesMap).reduce((a, b) => a + b, 0);
 
       const ctx1 = document.getElementById('chartCondicionArchivo').getContext('2d');
@@ -717,8 +756,14 @@
         }
       });
 
-      let sortedOficinas = Object.keys(oficinasMap).sort((a,b) => oficinasMap[b].servicios - oficinasMap[a].servicios).slice(0, 7);
-      let dataServiciosTop = sortedOficinas.map(k => oficinasMap[k].servicios);
+      // Agregamos por nombre de oficina para el gráfico de barras top
+      let oficinasBarMap = {};
+      Object.values(oficinasOrigenMap).forEach(item => {
+        oficinasBarMap[item.oficinaName] = (oficinasBarMap[item.oficinaName] || 0) + item.servicios;
+      });
+
+      let sortedOficinas = Object.keys(oficinasBarMap).sort((a,b) => oficinasBarMap[b] - oficinasBarMap[a]).slice(0, 7);
+      let dataServiciosTop = sortedOficinas.map(k => oficinasBarMap[k]);
 
       const ctx2 = document.getElementById('chartOficinasArchivo').getContext('2d');
       if (chartOficinasArchivoObj) chartOficinasArchivoObj.destroy();
@@ -750,7 +795,7 @@
       });
     }
 
-    function renderTableOficinasArchivo(oficinasMap, totalServicios) {
+    function renderTableOficinasArchivo(oficinasOrigenMap, totalServicios) {
       const tbody = document.getElementById('tbody-oficinas-archivo');
       const tfootServ = document.getElementById('tfoot-archivo-servicios');
       const tfootDocs = document.getElementById('tfoot-archivo-docs');
@@ -758,10 +803,10 @@
       tbody.innerHTML = '';
       currentExportArchivo = [];
 
-      let sortedKeys = Object.keys(oficinasMap).sort((a, b) => oficinasMap[b].servicios - oficinasMap[a].servicios);
+      let sortedKeys = Object.keys(oficinasOrigenMap).sort((a, b) => oficinasOrigenMap[b].servicios - oficinasOrigenMap[a].servicios);
 
       if (sortedKeys.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No hay registros para el filtro seleccionado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-center text-slate-400">No hay registros para el filtro seleccionado.</td></tr>`;
         tfootServ.innerText = '0';
         tfootDocs.innerText = '0';
         tfootImgs.innerText = '0';
@@ -772,8 +817,8 @@
       let sumDocs = 0;
       let sumImgs = 0;
 
-      sortedKeys.forEach((oficinaName, index) => {
-        let item = oficinasMap[oficinaName];
+      sortedKeys.forEach((key, index) => {
+        let item = oficinasOrigenMap[key];
         sumServ += item.servicios;
         sumDocs += item.docs;
         sumImgs += item.imgs;
@@ -782,18 +827,25 @@
 
         currentExportArchivo.push({
           "N°": index + 1,
-          "Unidad Orgánica / Oficina": oficinaName,
+          "Unidad Orgánica / Oficina": item.oficinaName,
+          "Origen de Ingreso": item.origenLabel,
           "Cantidad Servicios": item.servicios,
           "Total Documentos": item.docs,
           "Total Imágenes": item.imgs,
           "% Participación": `${pct}%`
         });
 
+        // Estilo visual diferenciado según el origen
+        let badgeColor = item.origenLabel.includes("SGD") 
+          ? 'bg-blue-50 text-blue-700 border-blue-200' 
+          : 'bg-amber-50 text-amber-700 border-amber-200';
+
         let row = document.createElement('tr');
         row.className = 'hover:bg-slate-50 transition border-b border-slate-100';
         row.innerHTML = `
           <td class="py-2.5 px-3 font-semibold text-slate-400">${index + 1}</td>
-          <td class="py-2.5 px-3 font-bold text-slate-800">${oficinaName}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-800">${item.oficinaName}</td>
+          <td class="py-2.5 px-3"><span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${badgeColor}">${item.origenLabel}</span></td>
           <td class="py-2.5 px-3 text-center font-extrabold text-amber-700 bg-amber-50/50 rounded-lg">${item.servicios}</td>
           <td class="py-2.5 px-3 text-center font-bold text-blue-700">${item.docs.toLocaleString()}</td>
           <td class="py-2.5 px-3 text-center font-bold text-indigo-700">${item.imgs.toLocaleString()}</td>
@@ -812,9 +864,11 @@
       const trs = document.getElementById('tbody-oficinas-archivo').getElementsByTagName('tr');
       for (let i = 0; i < trs.length; i++) {
         const oficinaTd = trs[i].getElementsByTagName('td')[1];
-        if (oficinaTd) {
-          const ofiText = oficinaTd.textContent || oficinaTd.innerText;
-          trs[i].style.display = (ofiText.toUpperCase().indexOf(input) > -1) ? "" : "none";
+        const origenTd = trs[i].getElementsByTagName('td')[2];
+        if (oficinaTd || origenTd) {
+          const ofiText = oficinaTd ? (oficinaTd.textContent || oficinaTd.innerText) : '';
+          const origText = origenTd ? (origenTd.textContent || origenTd.innerText) : '';
+          trs[i].style.display = (ofiText.toUpperCase().indexOf(input) > -1 || origText.toUpperCase().indexOf(input) > -1) ? "" : "none";
         }
       }
     }
@@ -824,7 +878,7 @@
       const year = document.getElementById('filterYearArchivo').value;
       const month = document.getElementById('filterMonthArchivo').value;
       const worksheet = XLSX.utils.json_to_sheet(currentExportArchivo);
-      worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }];
+      worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 25 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }];
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Consolidado_Archivo");
       XLSX.writeFile(workbook, `Consolidado_Archivo_Central_${year}_${month}.xlsx`);
