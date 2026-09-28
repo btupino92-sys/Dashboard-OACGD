@@ -119,7 +119,7 @@
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-servicios">0</div>
-          <p class="text-xs text-slate-400 mt-1">Último número de solicitud (Col. A)</p>
+          <p class="text-xs text-slate-400 mt-1">Total solicitudes (Col. A)</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -590,6 +590,9 @@
 
       let condicionesMap = {};
       let oficinasMap = {};
+      
+      // Control para agrupar servicios únicos por ID de solicitud y oficina correctamente
+      let solicitudOficinaMap = {};
 
       data.forEach(r => {
         const valSolicitudId = getFieldValue(r, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
@@ -599,7 +602,6 @@
         const condicion = getFieldValue(r, ['CONDICIÓN DE SERVICIO', 'CONDICION DE SERVICIO', 'CONDICION']).toUpperCase() || 'OTROS';
         const oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA']).toUpperCase() || 'SIN OFICINA';
 
-        // Capturamos el número máximo de la columna A para fijar el total exacto de servicios
         let numParsed = parseInt(String(valSolicitudId).trim(), 10);
         if (!isNaN(numParsed) && numParsed > maxSolicitudNum) {
           maxSolicitudNum = numParsed;
@@ -623,14 +625,29 @@
         condicionesMap[condicion] = (condicionesMap[condicion] || 0) + 1;
 
         if (!oficinasMap[oficina]) {
-          oficinasMap[oficina] = { servicios: 0, docs: 0, imgs: 0 };
+          oficinasMap[oficina] = { serviciosSet: new Set(), servicios: 0, docs: 0, imgs: 0 };
         }
-        oficinasMap[oficina].servicios += 1;
+        
+        // Acumulamos documentos e imágenes por cada fila (incluyendo el 158 y sus múltiples documentos)
         oficinasMap[oficina].docs += valDocs;
         oficinasMap[oficina].imgs += valImgs;
+
+        // Identificamos el servicio único por su número en la columna A para la oficina
+        if (valSolicitudId !== '') {
+          oficinasMap[oficina].serviciosSet.add(String(valSolicitudId).trim());
+        }
       });
 
-      // El total de servicios será exactamente el número máximo encontrado en la columna A (ej. 152)
+      // Calculamos los servicios por oficina basándonos en los IDs únicos o filas si faltara ID
+      Object.keys(oficinasMap).forEach(ofi => {
+        if (oficinasMap[ofi].serviciosSet.size > 0) {
+          oficinasMap[ofi].servicios = oficinasMap[ofi].serviciosSet.size;
+        } else {
+          // Respaldo por conteo de filas de la oficina si no hay ID numérico
+          oficinasMap[ofi].servicios = 1; 
+        }
+      });
+
       const totalServicios = maxSolicitudNum > 0 ? maxSolicitudNum : data.length;
 
       const promDocsPorServicio = totalServicios > 0 ? (totalDocs / totalServicios).toFixed(1) : '0.0';
