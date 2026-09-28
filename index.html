@@ -425,7 +425,7 @@
       </div>
     </section>
 
-    <!-- 5. SECCIÓN MENSAJERÍA -->
+    <!-- 5. SECCIÓN MENSAJERÍA (ACTUALIZADA CON NUEVOS INDICADORES) -->
     <section id="sec-mensajeria" class="space-y-6">
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
@@ -471,8 +471,8 @@
         </div>
       </div>
 
-      <!-- Tarjetas KPI Mensajería -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Tarjetas KPI Mensajería (Actualizadas a 5 tarjetas) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
           <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
             <span>Total Envíos</span>
@@ -502,11 +502,20 @@
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
           <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
-            <span>No Distribuidos</span>
-            <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-circle-xmark"></i></div>
+            <span>No distribuido (doc. observado)</span>
+            <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation"></i></div>
           </div>
-          <div class="text-3xl font-extrabold text-rose-600 mt-2" id="kpi-nodistribuido-mensajeria">0</div>
-          <p class="text-xs text-rose-500 mt-1 font-semibold" id="kpi-nodistribuido-percent">Devueltos / Motivo de dirección</p>
+          <div class="text-3xl font-extrabold text-rose-600 mt-2" id="kpi-observado-mensajeria">0</div>
+          <p class="text-xs text-rose-500 mt-1 font-semibold" id="kpi-observado-percent">Registros con "Motivo"</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
+          <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
+            <span>No distribuido (pérdida de doc.)</span>
+            <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-circle-xmark"></i></div>
+          </div>
+          <div class="text-3xl font-extrabold text-purple-600 mt-2" id="kpi-perdida-mensajeria">0</div>
+          <p class="text-xs text-purple-500 mt-1 font-semibold" id="kpi-perdida-percent">Registros "No distribuido"</p>
         </div>
       </div>
 
@@ -576,7 +585,8 @@
                 <th class="py-2.5 px-3 border border-slate-700 text-center">Total Envíos</th>
                 <th class="py-2.5 px-3 border border-slate-700 text-center">Entregados</th>
                 <th class="py-2.5 px-3 border border-slate-700 text-center">En Gestión / Despacho</th>
-                <th class="py-2.5 px-3 border border-slate-700 text-center">No Distribuidos</th>
+                <th class="py-2.5 px-3 border border-slate-700 text-center">No distribuido (doc. observado)</th>
+                <th class="py-2.5 px-3 border border-slate-700 text-center">No distribuido (pérdida de doc.)</th>
                 <th class="py-2.5 px-3 border border-slate-700 text-right">% Participación</th>
               </tr>
             </thead>
@@ -590,7 +600,8 @@
                 <td class="py-3 px-3 text-center text-sm font-extrabold text-teal-300 bg-slate-800 border border-slate-800" id="tfoot-mensajeria-total">0</td>
                 <td class="py-3 px-3 text-center text-sm font-extrabold text-emerald-300 bg-slate-800 border border-slate-800" id="tfoot-mensajeria-entregados">0</td>
                 <td class="py-3 px-3 text-center text-sm font-extrabold text-amber-300 bg-slate-800 border border-slate-800" id="tfoot-mensajeria-gestion">0</td>
-                <td class="py-3 px-3 text-center text-sm font-extrabold text-rose-300 bg-slate-800 border border-slate-800" id="tfoot-mensajeria-nodistribuido">0</td>
+                <td class="py-3 px-3 text-center text-sm font-extrabold text-rose-300 bg-slate-800 border border-slate-800" id="tfoot-mensajeria-observado">0</td>
+                <td class="py-3 px-3 text-center text-sm font-extrabold text-purple-300 bg-slate-800 border border-slate-800" id="tfoot-mensajeria-perdida">0</td>
                 <td class="py-3 px-3 text-right text-emerald-400 font-bold border border-slate-800" id="tfoot-mensajeria-pct">100%</td>
               </tr>
             </tfoot>
@@ -752,7 +763,7 @@
     }
 
     // ==========================================
-    // 1. ARCHIVO CENTRAL
+    // 1. ARCHIVO CENTRAL (SIN MODIFICACIONES)
     // ==========================================
     function fetchArchivoData() {
       Papa.parse(ARCHIVO_SHEET_URL, {
@@ -1015,7 +1026,7 @@
     }
 
     // ==========================================
-    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP)
+    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP - SIN MODIFICACIONES)
     // ==========================================
     function fetchSaipData() {
       Papa.parse(SAIP_SHEET_URL, {
@@ -1296,7 +1307,7 @@
     }
 
     // ==========================================
-    // 3. MENSAJERÍA Y NOTIFICACIONES
+    // 3. MENSAJERÍA Y NOTIFICACIONES (ACTUALIZADO)
     // ==========================================
     function fetchMensajeriaData() {
       Papa.parse(MENSAJERIA_SHEET_URL, {
@@ -1315,7 +1326,6 @@
       const selectedMonth = document.getElementById('filterMonthMensajeria').value;
 
       let filtered = rawMensajeriaData.filter(row => {
-        // Columna C: Fechas de ingreso (índice 2 o buscando por encabezados)
         const fechaIngresoStr = getFieldValue(row, ['FECHA DE INGRESO', 'FECHA INGRESO', 'FECHA', 'FECHA REGISTRO']) || getFieldValueByIndex(row, 2);
         
         if (!fechaIngresoStr) {
@@ -1343,20 +1353,16 @@
       const total = data.length;
       let entregados = 0;
       let enGestionDespacho = 0;
-      let noDistribuidos = 0;
+      let noDistribuidoObservado = 0; // "Motivo"
+      let noDistribuidoPerdida = 0;   // "No distribuido"
 
       let estadosMap = {};
       let oficinasMap = {};
       let departamentoDestinoMap = {};
 
       data.forEach(r => {
-        // Columna F: Unidades Solicitantes
         const oficina = (getFieldValue(r, ['UNIDAD ORGÁNICA', 'UNIDAD ORGANICA', 'UNIDAD SOLICITANTE', 'OFICINA', 'SOLICITANTE', 'ÁREA']) || getFieldValueByIndex(r, 5)).toUpperCase() || 'SIN ESPECIFICAR';
-        
-        // Departamento Destino
         const departamento = (getFieldValue(r, ['DEPARTAMENTO', 'DEPARTAMENTO DESTINO', 'DESTINO', 'LUGAR DE DESTINO']) || getFieldValueByIndex(r, 6)).toUpperCase() || 'LIMA / OTROS';
-
-        // Columna L: Estado del Documento
         const estadoRaw = (getFieldValue(r, ['ESTADO', 'ESTADO DEL DOCUMENTO', 'SITUACION', 'SITUACIÓN', 'CONDICION', 'CONDICIÓN']) || getFieldValueByIndex(r, 11)).toUpperCase();
 
         let estadoCategoria = 'EN GESTIÓN / PARA DESPACHO';
@@ -1364,9 +1370,12 @@
         if (estadoRaw.includes('ENTREGADO')) {
           estadoCategoria = 'ENTREGADO';
           entregados++;
-        } else if (estadoRaw.includes('NO DISTRIBUIDO') || estadoRaw.includes('DEVUELTO') || estadoRaw.includes('PERDIDO')) {
-          estadoCategoria = 'NO DISTRIBUIDO';
-          noDistribuidos++;
+        } else if (estadoRaw.includes('MOTIVO')) {
+          estadoCategoria = 'No distribuido (documento observado)';
+          noDistribuidoObservado++;
+        } else if (estadoRaw.includes('NO DISTRIBUIDO') || estadoRaw.includes('PERDIDO')) {
+          estadoCategoria = 'No distribuido (pérdida de documento)';
+          noDistribuidoPerdida++;
         } else {
           estadoCategoria = 'EN GESTIÓN / PARA DESPACHO';
           enGestionDespacho++;
@@ -1380,26 +1389,36 @@
         }
 
         if (!oficinasMap[oficina]) {
-          oficinasMap[oficina] = { total: 0, entregados: 0, gestion: 0, nodistribuido: 0 };
+          oficinasMap[oficina] = { total: 0, entregados: 0, gestion: 0, observado: 0, perdida: 0 };
         }
         oficinasMap[oficina].total++;
-        if (estadoCategoria === 'ENTREGADO') oficinasMap[oficina].entregados++;
-        else if (estadoCategoria === 'NO DISTRIBUIDO') oficinasMap[oficina].nodistribuido++;
-        else oficinasMap[oficina].gestion++;
+
+        if (estadoCategoria === 'ENTREGADO') {
+          oficinasMap[oficina].entregados++;
+        } else if (estadoCategoria === 'No distribuido (documento observado)') {
+          oficinasMap[oficina].observado++;
+        } else if (estadoCategoria === 'No distribuido (pérdida de documento)') {
+          oficinasMap[oficina].perdida++;
+        } else {
+          oficinasMap[oficina].gestion++;
+        }
       });
 
       const pctEntregados = total > 0 ? ((entregados / total) * 100).toFixed(1) : '0.0';
       const pctGestion = total > 0 ? ((enGestionDespacho / total) * 100).toFixed(1) : '0.0';
-      const pctNoDist = total > 0 ? ((noDistribuidos / total) * 100).toFixed(1) : '0.0';
+      const pctObservado = total > 0 ? ((noDistribuidoObservado / total) * 100).toFixed(1) : '0.0';
+      const pctPerdida = total > 0 ? ((noDistribuidoPerdida / total) * 100).toFixed(1) : '0.0';
 
       document.getElementById('kpi-total-mensajeria').innerText = total.toLocaleString();
       document.getElementById('kpi-entregados-mensajeria').innerText = entregados.toLocaleString();
       document.getElementById('kpi-gestion-mensajeria').innerText = enGestionDespacho.toLocaleString();
-      document.getElementById('kpi-nodistribuido-mensajeria').innerText = noDistribuidos.toLocaleString();
+      document.getElementById('kpi-observado-mensajeria').innerText = noDistribuidoObservado.toLocaleString();
+      document.getElementById('kpi-perdida-mensajeria').innerText = noDistribuidoPerdida.toLocaleString();
 
       document.getElementById('kpi-entregados-percent').innerText = `${pctEntregados}% del total`;
       document.getElementById('kpi-gestion-percent').innerText = `${pctGestion}% pendientes de entrega`;
-      document.getElementById('kpi-nodistribuido-percent').innerText = `${pctNoDist}% devueltos / no entregados`;
+      document.getElementById('kpi-observado-percent').innerText = `${pctObservado}% del total`;
+      document.getElementById('kpi-perdida-percent').innerText = `${pctPerdida}% del total`;
 
       renderChartsMensajeria(estadosMap, departamentoDestinoMap);
       renderTableOficinasMensajeria(oficinasMap, total);
@@ -1416,7 +1435,7 @@
           labels: Object.keys(estadosMap),
           datasets: [{
             data: Object.values(estadosMap),
-            backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#f43f5e', '#8b5cf6', '#64748b']
+            backgroundColor: ['#10b981', '#f59e0b', '#f43f5e', '#8b5cf6', '#3b82f6', '#64748b', '#06b6d4']
           }]
         },
         options: {
@@ -1425,7 +1444,7 @@
           plugins: {
             datalabels: {
               color: '#ffffff',
-              font: { weight: 'bold', size: 12 },
+              font: { weight: 'bold', size: 11 },
               formatter: (val) => val > 0 ? `${val}\n(${((val/totalEst)*100).toFixed(1)}%)` : '',
               textAlign: 'center'
             }
@@ -1433,18 +1452,18 @@
         }
       });
 
-      let sortedDeps = Object.keys(departamentoDestinoMap).sort((a,b) => departamentoDestinoMap[b] - departamentoDestinoMap[a]).slice(0, 7);
-      let dataDepsTop = sortedDeps.map(k => departamentoDestinoMap[k]);
+      let sortedDepts = Object.keys(departamentoDestinoMap).sort((a,b) => departamentoDestinoMap[b] - departamentoDestinoMap[a]).slice(0, 7);
+      let dataDeptsTop = sortedDepts.map(k => departamentoDestinoMap[k]);
 
       const ctx2 = document.getElementById('chartOficinasMensajeria').getContext('2d');
       if (chartOficinasMensajeriaObj) chartOficinasMensajeriaObj.destroy();
       chartOficinasMensajeriaObj = new Chart(ctx2, {
         type: 'bar',
         data: {
-          labels: sortedDeps,
+          labels: sortedDepts,
           datasets: [{
-            label: 'Total Envíos',
-            data: dataDepsTop,
+            label: 'Cantidad de Envíos',
+            data: dataDeptsTop,
             backgroundColor: '#0d9488',
             borderRadius: 6
           }]
@@ -1471,32 +1490,39 @@
       const tfootTotal = document.getElementById('tfoot-mensajeria-total');
       const tfootEntregados = document.getElementById('tfoot-mensajeria-entregados');
       const tfootGestion = document.getElementById('tfoot-mensajeria-gestion');
-      const tfootNoDistribuido = document.getElementById('tfoot-mensajeria-nodistribuido');
+      const tfootObservado = document.getElementById('tfoot-mensajeria-observado');
+      const tfootPerdida = document.getElementById('tfoot-mensajeria-perdida');
+      const tfootPct = document.getElementById('tfoot-mensajeria-pct');
+
       tbody.innerHTML = '';
       currentExportMensajeria = [];
 
       let sortedKeys = Object.keys(oficinasMap).sort((a, b) => oficinasMap[b].total - oficinasMap[a].total);
 
       if (sortedKeys.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-center text-slate-400">No hay registros para el filtro seleccionado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="py-4 text-center text-slate-400">No hay registros para el filtro seleccionado.</td></tr>`;
         tfootTotal.innerText = '0';
         tfootEntregados.innerText = '0';
         tfootGestion.innerText = '0';
-        tfootNoDistribuido.innerText = '0';
+        if(tfootObservado) tfootObservado.innerText = '0';
+        if(tfootPerdida) tfootPerdida.innerText = '0';
+        tfootPct.innerText = '0%';
         return;
       }
 
       let sumTotal = 0;
-      let sumEnt = 0;
-      let sumGes = 0;
-      let sumNoDist = 0;
+      let sumEntregados = 0;
+      let sumGestion = 0;
+      let sumObservado = 0;
+      let sumPerdida = 0;
 
       sortedKeys.forEach((oficinaName, index) => {
         let item = oficinasMap[oficinaName];
         sumTotal += item.total;
-        sumEnt += item.entregados;
-        sumGes += item.gestion;
-        sumNoDist += item.nodistribuido;
+        sumEntregados += item.entregados;
+        sumGestion += item.gestion;
+        sumObservado += item.observado;
+        sumPerdida += item.perdida;
 
         let pct = totalGeneral > 0 ? ((item.total / totalGeneral) * 100).toFixed(1) : 0;
 
@@ -1506,7 +1532,8 @@
           "Total Envíos": item.total,
           "Entregados": item.entregados,
           "En Gestión / Despacho": item.gestion,
-          "No Distribuidos": item.nodistribuido,
+          "No distribuido (doc. observado)": item.observado,
+          "No distribuido (pérdida de doc.)": item.perdida,
           "% Participación": `${pct}%`
         });
 
@@ -1515,19 +1542,22 @@
         row.innerHTML = `
           <td class="py-2.5 px-3 font-semibold text-slate-400">${index + 1}</td>
           <td class="py-2.5 px-3 font-bold text-slate-800">${oficinaName}</td>
-          <td class="py-2.5 px-3 text-center font-extrabold text-teal-700 bg-teal-50/50 rounded-lg">${item.total.toLocaleString()}</td>
-          <td class="py-2.5 px-3 text-center font-bold text-emerald-600">${item.entregados.toLocaleString()}</td>
-          <td class="py-2.5 px-3 text-center font-bold text-amber-600">${item.gestion.toLocaleString()}</td>
-          <td class="py-2.5 px-3 text-center font-bold text-rose-600">${item.nodistribuido.toLocaleString()}</td>
+          <td class="py-2.5 px-3 text-center font-extrabold text-teal-700 bg-teal-50/50 rounded-lg">${item.total}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-emerald-700">${item.entregados}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-amber-700">${item.gestion}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-rose-700">${item.observado}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-purple-700">${item.perdida}</td>
           <td class="py-2.5 px-3 text-right font-medium text-slate-600">${pct}%</td>
         `;
         tbody.appendChild(row);
       });
 
-      tfootTotal.innerText = sumTotal.toLocaleString();
-      tfootEntregados.innerText = sumEnt.toLocaleString();
-      tfootGestion.innerText = sumGes.toLocaleString();
-      tfootNoDistribuido.innerText = sumNoDist.toLocaleString();
+      tfootTotal.innerText = sumTotal;
+      tfootEntregados.innerText = sumEntregados;
+      tfootGestion.innerText = sumGestion;
+      if(tfootObservado) tfootObservado.innerText = sumObservado;
+      if(tfootPerdida) tfootPerdida.innerText = sumPerdida;
+      tfootPct.innerText = totalGeneral > 0 ? '100%' : '0%';
     }
 
     function filterTableOficinaMensajeria() {
@@ -1547,19 +1577,20 @@
       const year = document.getElementById('filterYearMensajeria').value;
       const month = document.getElementById('filterMonthMensajeria').value;
       const worksheet = XLSX.utils.json_to_sheet(currentExportMensajeria);
-      worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 15 }, { wch: 15 }, { wch: 22 }, { wch: 18 }, { wch: 18 }];
+      worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 30 }, { wch: 30 }, { wch: 18 }];
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Consolidado_Mensajeria");
-      XLSX.writeFile(workbook, `Consolidado_Mensajeria_OACGD_${year}_${month}.xlsx`);
+      XLSX.writeFile(workbook, `Consolidado_Mensajeria_${year}_${month}.xlsx`);
     }
 
-    function downloadChartImage(chartId, fileName) {
-      const chartCanvas = document.getElementById(chartId);
-      if (!chartCanvas) return;
-      const imageURI = chartCanvas.toDataURL('image/png', 1.0);
+    // Funciones comunes de descarga de gráficos
+    function downloadChartImage(canvasId, filename) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const imageURL = canvas.toDataURL('image/png');
       const link = document.createElement('a');
-      link.download = fileName;
-      link.href = imageURI;
+      link.href = imageURL;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
