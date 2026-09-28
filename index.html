@@ -463,7 +463,7 @@
   </main>
 
   <script>
-    // URLs de exportación CSV independientes para el Archivo Central
+    // URLs de exportación CSV independientes proporcionadas
     const SERVICIOS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?gid=1324538390&single=true&output=csv';
     const INFORMES_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?gid=1876631515&single=true&output=csv'; 
 
@@ -581,13 +581,15 @@
 
               applyFiltersArchivo();
             },
-            error: function() {
+            error: function(err) {
+              console.error("Error al cargar informes:", err);
               rawInformesData = [];
               applyFiltersArchivo();
             }
           });
         },
-        error: function() {
+        error: function(err) {
+          console.error("Error al cargar servicios:", err);
           rawServiciosData = [];
           applyFiltersArchivo();
         }
