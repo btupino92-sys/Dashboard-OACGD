@@ -20,7 +20,7 @@
 
   <style>
     .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
-    .active-tab { border-bottom: 3px solid #d97706; color: #d97706; font-weight: 700; background-color: #f8fafc; }
+    .active-tab { border-bottom: 3px solid #0d9488; color: #0d9488; font-weight: 700; background-color: #f8fafc; }
 
     @media print {
       body * { visibility: hidden; }
@@ -49,15 +49,15 @@
       </div>
     </div>
 
-    <!-- Navegación según el orden solicitado -->
+    <!-- Navegación -->
     <nav class="bg-slate-900 border-b border-slate-800 text-slate-300 text-xs md:text-sm">
       <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-2 md:space-x-4">
         <button onclick="switchTab('resumen')" id="tab-resumen" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-chart-pie mr-1.5 text-slate-400"></i>Consolidado General</button>
-        <button onclick="switchTab('archivo')" id="tab-archivo" class="py-3 px-3 active-tab border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-box-archive mr-1.5 text-amber-400"></i>Archivo Central</button>
+        <button onclick="switchTab('archivo')" id="tab-archivo" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-box-archive mr-1.5 text-amber-400"></i>Archivo Central</button>
         <button onclick="switchTab('saip')" id="tab-saip" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-file-shield mr-1.5 text-blue-400"></i>Acceso a la Información Pública</button>
         <button onclick="switchTab('mesapartes')" id="tab-mesapartes" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-envelope-open-text mr-1.5 text-slate-400"></i>Mesa de Partes</button>
         <button onclick="switchTab('atencion')" id="tab-atencion" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-headset mr-1.5 text-slate-400"></i>Atención a la Ciudadanía</button>
-        <button onclick="switchTab('mensajeria')" id="tab-mensajeria" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-paper-plane mr-1.5 text-teal-400"></i>Mensajería</button>
+        <button onclick="switchTab('mensajeria')" id="tab-mensajeria" class="py-3 px-3 active-tab border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-paper-plane mr-1.5 text-teal-400"></i>Mensajería</button>
         <button onclick="switchTab('cendoc')" id="tab-cendoc" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-book-bookmark mr-1.5 text-slate-400"></i>CENDOC</button>
         <button onclick="switchTab('admin')" id="tab-admin" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-building-user mr-1.5 text-slate-400"></i>Área Administrativa</button>
       </div>
@@ -66,8 +66,8 @@
 
   <main class="max-w-7xl mx-auto px-4 py-6">
 
-    <!-- 1. SECCIÓN ARCHIVO CENTRAL (PRIMERO) -->
-    <section id="sec-archivo" class="space-y-6">
+    <!-- 1. SECCIÓN ARCHIVO CENTRAL -->
+    <section id="sec-archivo" class="hidden space-y-6">
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
           <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Servicios Archivísticos - Archivo Central</h2>
@@ -147,7 +147,7 @@
             <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-prom-tiempo-servicio">0</div>
-          <p class="text-xs text-slate-400 mt-1">Horas promedio por solicitud (Col. F)</p>
+          <p class="text-xs text-slate-400 mt-1">Horas promedio por solicitud</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -165,7 +165,7 @@
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow relative">
           <div class="flex justify-between items-center mb-4">
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-chart-pie text-amber-600"></i> Condición de Servicio (Modalidades)
+              <i class="fa-solid fa-chart-pie text-amber-600"></i> Condición de Servicio
             </h3>
             <button onclick="downloadChartImage('chartCondicionArchivo', 'Grafico_Condicion_Servicio_Archivo.png')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium flex items-center gap-1 transition no-print">
               <i class="fa-solid fa-image text-amber-600"></i> Descargar Gráfico
@@ -198,18 +198,15 @@
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
               <i class="fa-solid fa-building text-amber-600"></i> Consolidado de Solicitudes por Oficina Solicitante
             </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Sincronizado dinámicamente con los Filtros de Archivo Central</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2 no-print">
             <button onclick="exportArchivoToExcelXLSX()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-sm">
               <i class="fa-solid fa-file-excel"></i> Exportar a Excel (.xlsx)
             </button>
-
             <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-sm">
               <i class="fa-solid fa-print"></i> Imprimir Tabla / PDF
             </button>
-
             <div class="relative">
               <input type="text" id="searchOficinaArchivo" onkeyup="filterTableOficinaArchivo()" placeholder="Buscar Oficina..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-amber-500 w-full sm:w-48">
               <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-2.5 top-2.5"></i>
@@ -229,8 +226,7 @@
                 <th class="py-2.5 px-3 border border-slate-700 text-right">% Participación</th>
               </tr>
             </thead>
-            <tbody id="tbody-oficinas-archivo" class="divide-y divide-slate-100 text-slate-700">
-            </tbody>
+            <tbody id="tbody-oficinas-archivo" class="divide-y divide-slate-100 text-slate-700"></tbody>
             <tfoot class="bg-slate-900 text-white font-bold text-xs sticky bottom-0 z-10 border-t-2 border-slate-700">
               <tr>
                 <td colspan="2" class="py-3 px-3 uppercase tracking-wider text-right border border-slate-800">
@@ -247,7 +243,7 @@
       </div>
     </section>
 
-    <!-- 2. SECCIÓN ACCESO A LA INFORMACIÓN PÚBLICA (SEGUNDO) -->
+    <!-- 2. SECCIÓN ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) -->
     <section id="sec-saip" class="hidden space-y-6">
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
@@ -328,7 +324,7 @@
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-dias-saip">0</div>
-          <p class="text-xs text-slate-400 mt-1">Días de atención promedio (Col. W)</p>
+          <p class="text-xs text-slate-400 mt-1">Días de atención promedio</p>
         </div>
       </div>
 
@@ -370,18 +366,15 @@
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
               <i class="fa-solid fa-sitemap text-blue-600"></i> Consolidado de Áreas y Movimiento de Documentos
             </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Sincronizado dinámicamente con los Filtros de SAIP</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2 no-print">
             <button onclick="exportSaipToExcelXLSX()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-sm">
               <i class="fa-solid fa-file-excel"></i> Exportar a Excel (.xlsx)
             </button>
-
             <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold flex items-center gap-1.5 shadow-sm">
               <i class="fa-solid fa-print"></i> Imprimir Tabla / PDF
             </button>
-
             <div class="relative">
               <input type="text" id="searchArea" onkeyup="filterTableArea()" placeholder="Buscar Área o Detalle..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-blue-500 w-full sm:w-48">
               <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-2.5 top-2.5"></i>
@@ -401,8 +394,7 @@
                 <th class="py-2.5 px-3 border border-slate-700 text-right">% Participación</th>
               </tr>
             </thead>
-            <tbody id="tbody-areas" class="divide-y divide-slate-100 text-slate-700">
-            </tbody>
+            <tbody id="tbody-areas" class="divide-y divide-slate-100 text-slate-700"></tbody>
             <tfoot class="bg-slate-900 text-white font-bold text-xs sticky bottom-0 z-10 border-t-2 border-slate-700">
               <tr>
                 <td colspan="4" class="py-3 px-3 uppercase tracking-wider text-right border border-slate-800">
@@ -417,7 +409,7 @@
       </div>
     </section>
 
-    <!-- 3. SECCIÓN MESA DE PARTES (TERCERO) -->
+    <!-- 3. SECCIÓN MESA DE PARTES -->
     <section id="sec-mesapartes" class="hidden space-y-4">
       <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
         <h3 class="font-bold text-base text-slate-800">Módulos de Mesa de Partes</h3>
@@ -425,7 +417,7 @@
       </div>
     </section>
 
-    <!-- 4. SECCIÓN ATENCIÓN A LA CIUDADANÍA (CUARTO) -->
+    <!-- 4. SECCIÓN ATENCIÓN A LA CIUDADANÍA -->
     <section id="sec-atencion" class="hidden space-y-4">
       <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
         <h3 class="font-bold text-base text-slate-800">Módulos de Atención a la Ciudadanía</h3>
@@ -433,12 +425,12 @@
       </div>
     </section>
 
-    <!-- 5. SECCIÓN MENSAJERÍA (NUEVO - ANTES DE CENDOC) -->
-    <section id="sec-mensajeria" class="hidden space-y-6">
+    <!-- 5. SECCIÓN MENSAJERÍA (AJUSTADA CON NUEVOS ESTADOS Y METRICAS) -->
+    <section id="sec-mensajeria" class="space-y-6">
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
-          <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Servicios de Mensajería y Envíos - OACGD</h2>
-          <p class="text-xs text-slate-500">Monitoreo de Guías, Servicios de Courier, Entregas y Tiempos de Distribución</p>
+          <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Servicios de Mensajería y Notificaciones - OACGD</h2>
+          <p class="text-xs text-slate-500">Mapeo por Fechas de Ingreso (Col C), Unidades Solicitantes (Col F), Departamentos Destino y Estados de Entrega (Col L)</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
@@ -458,18 +450,18 @@
             <label class="text-slate-600 font-medium">Mes:</label>
             <select id="filterMonthMensajeria" onchange="applyFiltersMensajeria()" class="bg-white text-slate-800 rounded px-2 py-1 border border-slate-300 outline-none focus:border-teal-600 font-medium">
               <option value="ALL" selected>Todos los Meses</option>
-              <option value="ENERO">Enero</option>
-              <option value="FEBRERO">Febrero</option>
-              <option value="MARZO">Marzo</option>
-              <option value="ABRIL">Abril</option>
-              <option value="MAYO">Mayo</option>
-              <option value="JUNIO">Junio</option>
-              <option value="JULIO">Julio</option>
-              <option value="AGOSTO">Agosto</option>
-              <option value="SETIEMBRE">Setiembre</option>
-              <option value="OCTUBRE">Octubre</option>
-              <option value="NOVIEMBRE">Noviembre</option>
-              <option value="DICIEMBRE">Diciembre</option>
+              <option value="01">Enero</option>
+              <option value="02">Febrero</option>
+              <option value="03">Marzo</option>
+              <option value="04">Abril</option>
+              <option value="05">Mayo</option>
+              <option value="06">Junio</option>
+              <option value="07">Julio</option>
+              <option value="08">Agosto</option>
+              <option value="09">Setiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
             </select>
           </div>
 
@@ -479,7 +471,7 @@
         </div>
       </div>
 
-      <!-- Tarjetas KPI Mensajería -->
+      <!-- Tarjetas KPI Mensajería: Estados Reales en lugar de Plazos Normativos -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
           <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
@@ -487,12 +479,12 @@
             <div class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center"><i class="fa-solid fa-paper-plane"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-mensajeria">0</div>
-          <p class="text-xs text-slate-400 mt-1">Total registros mapeados</p>
+          <p class="text-xs text-slate-400 mt-1">Documentos notificados</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
           <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
-            <span>Entregados / Atendidos</span>
+            <span>Entregados</span>
             <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-circle-check"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-emerald-600 mt-2" id="kpi-entregados-mensajeria">0</div>
@@ -501,20 +493,20 @@
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
           <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
-            <span>En Trámite / Pendientes</span>
+            <span>En Gestión / Despacho</span>
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-truck-ramp-box"></i></div>
           </div>
-          <div class="text-3xl font-extrabold text-amber-600 mt-2" id="kpi-pendientes-mensajeria">0</div>
-          <p class="text-xs text-amber-600 mt-1 font-semibold" id="kpi-pendientes-percent">0% del total</p>
+          <div class="text-3xl font-extrabold text-amber-600 mt-2" id="kpi-gestion-mensajeria">0</div>
+          <p class="text-xs text-amber-600 mt-1 font-semibold" id="kpi-gestion-percent">Pendientes de entrega</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
           <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
-            <span>Prom. Días Entrega</span>
-            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-clock font-bold"></i></div>
+            <span>No Distribuidos</span>
+            <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-circle-xmark"></i></div>
           </div>
-          <div class="text-3xl font-extrabold text-indigo-600 mt-2" id="kpi-prom-dias-mensajeria">0</div>
-          <p class="text-xs text-indigo-500 mt-1 font-semibold">Días promedio de tránsito</p>
+          <div class="text-3xl font-extrabold text-rose-600 mt-2" id="kpi-nodistribuido-mensajeria">0</div>
+          <p class="text-xs text-rose-500 mt-1 font-semibold" id="kpi-nodistribuido-percent">Devueltos / Motivo de dirección</p>
         </div>
       </div>
 
@@ -523,7 +515,7 @@
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow relative">
           <div class="flex justify-between items-center mb-4">
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-chart-pie text-teal-600"></i> Estado de los Envíos
+              <i class="fa-solid fa-chart-pie text-teal-600"></i> Distribución de Estados de Documentos (Col. L)
             </h3>
             <button onclick="downloadChartImage('chartEstadoMensajeria', 'Grafico_Estado_Mensajeria.png')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium flex items-center gap-1 transition no-print">
               <i class="fa-solid fa-image text-teal-600"></i> Descargar Gráfico
@@ -537,9 +529,9 @@
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow relative">
           <div class="flex justify-between items-center mb-4">
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-chart-column text-teal-600"></i> Mayor Demanda por Unidad Orgánica
+              <i class="fa-solid fa-map-location-dot text-teal-600"></i> Envíos por Departamento Destino
             </h3>
-            <button onclick="downloadChartImage('chartOficinasMensajeria', 'Grafico_Demanda_Oficinas_Mensajeria.png')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium flex items-center gap-1 transition no-print">
+            <button onclick="downloadChartImage('chartOficinasMensajeria', 'Grafico_Departamentos_Mensajeria.png')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium flex items-center gap-1 transition no-print">
               <i class="fa-solid fa-image text-teal-600"></i> Descargar Gráfico
             </button>
           </div>
@@ -554,9 +546,9 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-building text-teal-600"></i> Consolidado de Envíos por Unidad Orgánica
+              <i class="fa-solid fa-building text-teal-600"></i> Consolidado de Envíos por Unidad Orgánica Solicitante (Col. F)
             </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Sincronizado dinámicamente con los Filtros de Mensajería</p>
+            <p class="text-xs text-slate-500 mt-0.5">Mapeo filtrado por Fechas de Ingreso (Col. C)</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2 no-print">
@@ -569,7 +561,7 @@
             </button>
 
             <div class="relative">
-              <input type="text" id="searchOficinaMensajeria" onkeyup="filterTableOficinaMensajeria()" placeholder="Buscar Oficina..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-teal-500 w-full sm:w-48">
+              <input type="text" id="searchOficinaMensajeria" onkeyup="filterTableOficinaMensajeria()" placeholder="Buscar Unidad..." class="text-xs bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-teal-500 w-full sm:w-48">
               <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-2.5 top-2.5"></i>
             </div>
           </div>
@@ -580,10 +572,11 @@
             <thead>
               <tr class="bg-slate-800 text-white uppercase text-[10px] tracking-wider sticky top-0 z-10">
                 <th class="py-2.5 px-3 border border-slate-700">#</th>
-                <th class="py-2.5 px-3 border border-slate-700">Unidad Orgánica / Área Solicitante</th>
+                <th class="py-2.5 px-3 border border-slate-700">Unidad Orgánica Solicitante</th>
                 <th class="py-2.5 px-3 border border-slate-700 text-center">Total Envíos</th>
                 <th class="py-2.5 px-3 border border-slate-700 text-center">Entregados</th>
-                <th class="py-2.5 px-3 border border-slate-700 text-center">En Trámite</th>
+                <th class="py-2.5 px-3 border border-slate-700 text-center">En Gestión / Despacho</th>
+                <th class="py-2.5 px-3 border border-slate-700 text-center">No Distribuidos</th>
                 <th class="py-2.5 px-3 border border-slate-700 text-right">% Participación</th>
               </tr>
             </thead>
@@ -596,7 +589,8 @@
                 </td>
                 <td class="py-3 px-3 text-center text-sm font-extrabold text-teal-300 bg-slate-800 border border-slate-800" id="tfoot-mensajeria-total">0</td>
                 <td class="py-3 px-3 text-center text-sm font-extrabold text-emerald-300 bg-slate-800 border border-slate-800" id="tfoot-mensajeria-entregados">0</td>
-                <td class="py-3 px-3 text-center text-sm font-extrabold text-amber-300 bg-slate-800 border border-slate-800" id="tfoot-mensajeria-pendientes">0</td>
+                <td class="py-3 px-3 text-center text-sm font-extrabold text-amber-300 bg-slate-800 border border-slate-800" id="tfoot-mensajeria-gestion">0</td>
+                <td class="py-3 px-3 text-center text-sm font-extrabold text-rose-300 bg-slate-800 border border-slate-800" id="tfoot-mensajeria-nodistribuido">0</td>
                 <td class="py-3 px-3 text-right text-emerald-400 font-bold border border-slate-800" id="tfoot-mensajeria-pct">100%</td>
               </tr>
             </tfoot>
@@ -605,7 +599,7 @@
       </div>
     </section>
 
-    <!-- 6. SECCIÓN CENDOC (SEXTO) -->
+    <!-- 6. SECCIÓN CENDOC -->
     <section id="sec-cendoc" class="hidden space-y-4">
       <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
         <h3 class="font-bold text-base text-slate-800">Módulos de CENDOC</h3>
@@ -613,7 +607,7 @@
       </div>
     </section>
 
-    <!-- 7. SECCIÓN ÁREA ADMINISTRATIVA (SÉPTIMO) -->
+    <!-- 7. SECCIÓN ÁREA ADMINISTRATIVA -->
     <section id="sec-admin" class="hidden space-y-4">
       <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
         <h3 class="font-bold text-base text-slate-800">Módulos de Área Administrativa</h3>
@@ -628,7 +622,7 @@
           <i class="fa-solid fa-circle-info text-xl text-blue-600"></i>
           <h3 class="font-bold text-base">Consolidado General de la Oficina (OACGD)</h3>
         </div>
-        <p class="text-sm text-slate-600">Integración de indicadores transversales de las 6 áreas operativas.</p>
+        <p class="text-sm text-slate-600">Integración de indicadores transversales de las áreas operativas.</p>
       </div>
     </section>
 
@@ -694,6 +688,14 @@
           const val = String(row[foundKey]).trim();
           if (val !== '') return val;
         }
+      }
+      return '';
+    }
+
+    function getFieldValueByIndex(row, index) {
+      const keys = Object.keys(row);
+      if (keys.length > index && row[keys[index]] !== undefined && row[keys[index]] !== null) {
+        return String(row[keys[index]]).trim();
       }
       return '';
     }
@@ -768,10 +770,8 @@
       let maxSolicitudNum = 0;
       let totalDocs = 0;
       let totalImagenes = 0;
-      
       let sumMetricaTiempo = 0;
       let countTiempos = 0;
-      
       let sumTiemposPorDoc = 0;
       let countTiemposPorDoc = 0;
 
@@ -784,10 +784,7 @@
         const valImgsStr = getFieldValue(r, ['IMAGENES', 'IMÁGENES', 'FOLIOS']);
         
         const keys = Object.keys(r);
-        let valMetricaStr = '';
-        if (keys.length >= 6) {
-          valMetricaStr = r[keys[5]] !== undefined ? r[keys[5]] : '';
-        }
+        let valMetricaStr = keys.length >= 6 ? r[keys[5]] : '';
         if (!valMetricaStr || String(valMetricaStr).trim() === '') {
           valMetricaStr = getFieldValue(r, ['METRICA', 'MÉTRICA', 'TIEMPO', 'TIEMPO DE ATENCION', 'HORAS']);
         }
@@ -796,9 +793,7 @@
         const oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA']).toUpperCase() || 'SIN OFICINA';
 
         let numParsed = parseInt(String(valSolicitudId).trim(), 10);
-        if (!isNaN(numParsed) && numParsed > maxSolicitudNum) {
-          maxSolicitudNum = numParsed;
-        }
+        if (!isNaN(numParsed) && numParsed > maxSolicitudNum) maxSolicitudNum = numParsed;
 
         let valDocs = parseFloat(String(valDocsStr).replace(',', '.'));
         if (isNaN(valDocs) || valDocs < 0) valDocs = 0;
@@ -810,10 +805,8 @@
         if (!isNaN(valMetrica) && valMetrica > 0) {
           sumMetricaTiempo += valMetrica;
           countTiempos++;
-
           if (valDocs > 0) {
-            let tiempoPorDocFila = valMetrica / valDocs;
-            sumTiemposPorDoc += tiempoPorDocFila;
+            sumTiemposPorDoc += (valMetrica / valDocs);
             countTiemposPorDoc++;
           }
         }
@@ -826,13 +819,9 @@
         if (!oficinasMap[oficina]) {
           oficinasMap[oficina] = { serviciosSet: new Set(), servicios: 0, docs: 0, imgs: 0 };
         }
-        
         oficinasMap[oficina].docs += valDocs;
         oficinasMap[oficina].imgs += valImgs;
-
-        if (valSolicitudId !== '') {
-          oficinasMap[oficina].serviciosSet.add(String(valSolicitudId).trim());
-        }
+        if (valSolicitudId !== '') oficinasMap[oficina].serviciosSet.add(String(valSolicitudId).trim());
       });
 
       Object.keys(oficinasMap).forEach(ofi => {
@@ -840,22 +829,17 @@
       });
 
       const totalServicios = maxSolicitudNum > 0 ? maxSolicitudNum : data.length;
-
       const promDocsPorServicio = totalServicios > 0 ? (totalDocs / totalServicios).toFixed(1) : '0.0';
       const promImgsPorDoc = totalDocs > 0 ? (totalImagenes / totalDocs).toFixed(1) : '0.0';
-      
       const divisorServicios = totalServicios > 0 ? totalServicios : (countTiempos > 0 ? countTiempos : 1);
       const promTiempoPorServicio = (sumMetricaTiempo / divisorServicios).toFixed(2);
-      
       const promTiempoPorDoc = countTiemposPorDoc > 0 ? (sumTiemposPorDoc / countTiemposPorDoc).toFixed(2) : '0.00';
 
       document.getElementById('kpi-total-servicios').innerText = totalServicios;
       document.getElementById('kpi-total-docs-archivo').innerText = totalDocs.toLocaleString();
       document.getElementById('kpi-total-imagenes').innerText = totalImagenes.toLocaleString();
-
       document.getElementById('kpi-prom-docs-servicio').innerText = `${promDocsPorServicio} docs / servicio`;
       document.getElementById('kpi-prom-imgs-doc').innerText = `${promImgsPorDoc} imágenes / doc`;
-
       document.getElementById('kpi-prom-tiempo-servicio').innerText = `${promTiempoPorServicio} hrs`;
       document.getElementById('kpi-prom-tiempo-doc').innerText = `${promTiempoPorDoc} hrs`;
 
@@ -1276,8 +1260,8 @@
 
     function exportSaipToExcelXLSX() {
       if (currentExportSaip.length === 0) return alert("No hay datos cargados.");
-      const year = document.getElementById('filterYearArchivo').value;
-      const month = document.getElementById('filterMonthArchivo').value;
+      const year = document.getElementById('filterYearSaip').value;
+      const month = document.getElementById('filterMonthSaip').value;
       const worksheet = XLSX.utils.json_to_sheet(currentExportSaip);
       worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 25 }, { wch: 18 }, { wch: 20 }, { wch: 18 }];
       const workbook = XLSX.utils.book_new();
@@ -1286,7 +1270,7 @@
     }
 
     // ==========================================
-    // 3. MENSAJERÍA Y ENVÍOS
+    // 3. MENSAJERÍA Y NOTIFICACIONES (ACTUALIZADO)
     // ==========================================
     function fetchMensajeriaData() {
       Papa.parse(MENSAJERIA_SHEET_URL, {
@@ -1302,20 +1286,22 @@
 
     function applyFiltersMensajeria() {
       const selectedYear = document.getElementById('filterYearMensajeria').value;
-      const selectedMonth = document.getElementById('filterMonthMensajeria').value.toUpperCase();
+      const selectedMonth = document.getElementById('filterMonthMensajeria').value;
 
       let filtered = rawMensajeriaData.filter(row => {
-        const mesRow = getFieldValue(row, ['MES', 'Mes']).toUpperCase();
-        const fechaEnvio = getFieldValue(row, ['FECHA', 'FECHA DE ENVÍO', 'FECHA ENVIO', 'FECHA REGISTRO', 'DIA']);
+        // Columna C: Fechas de ingreso
+        const fechaIngresoStr = getFieldValue(row, ['FECHA DE INGRESO', 'FECHA INGRESO', 'FECHA', 'FECHA REGISTRO']) || getFieldValueByIndex(row, 2);
+        
+        if (!fechaIngresoStr) return selectedYear === 'ALL' && selectedMonth === 'ALL';
 
-        let rowYear = '2026';
-        if (fechaEnvio) {
-          const dt = parseDatePeruvian(fechaEnvio);
-          if (dt) rowYear = String(dt.getFullYear());
-        }
+        const parsedDate = parseDatePeruvian(fechaIngresoStr);
+        if (!parsedDate) return true;
+
+        const rowYear = String(parsedDate.getFullYear());
+        const rowMonth = String(parsedDate.getMonth() + 1).padStart(2, '0');
 
         if (selectedYear !== 'ALL' && rowYear !== selectedYear) return false;
-        if (selectedMonth !== 'ALL' && !mesRow.includes(selectedMonth)) return false;
+        if (selectedMonth !== 'ALL' && rowMonth !== selectedMonth) return false;
 
         return true;
       });
@@ -1326,62 +1312,77 @@
     function updateMensajeriaDashboard(data) {
       const total = data.length;
       let entregados = 0;
-      let pendientes = 0;
-      let sumDias = 0;
-      let countDias = 0;
+      let enGestionDespacho = 0;
+      let noDistribuidos = 0;
 
       let estadosMap = {};
       let oficinasMap = {};
+      let departamentoDestinoMap = {};
 
       data.forEach(r => {
-        const estado = getFieldValue(r, ['ESTADO', 'CONDICIÓN', 'CONDICION', 'SITUACIÓN', 'SITUACION', 'ESTADO DEL ENVÍO']).toUpperCase() || 'EN TRÁMITE';
-        const oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA', 'UNIDAD ORGANICA', 'REMITENTE', 'DESTINO', 'ÁREA']).toUpperCase() || 'SIN ESPECIFICAR';
-        const diasStr = getFieldValue(r, ['DÍAS', 'DIAS', 'TIEMPO', 'DÍAS ATENCIÓN', 'DIAS ATENCION', 'DÍAS TRANSITO']);
+        // Columna F: Unidades Solicitantes
+        const oficina = (getFieldValue(r, ['UNIDAD ORGÁNICA', 'UNIDAD ORGANICA', 'UNIDAD SOLICITANTE', 'OFICINA', 'SOLICITANTE', 'ÁREA']) || getFieldValueByIndex(r, 5)).toUpperCase() || 'SIN ESPECIFICAR';
+        
+        // Departamento Destino
+        const departamento = (getFieldValue(r, ['DEPARTAMENTO', 'DEPARTAMENTO DESTINO', 'DESTINO', 'LUGAR DE DESTINO']) || getFieldValueByIndex(r, 6)).toUpperCase() || 'LIMA / OTROS';
 
-        if (estado.includes('ENTREGADO') || estado.includes('ATENDIDO') || estado.includes('RECIBIDO') || estado.includes('FINALIZADO')) {
+        // Columna L: Estado de los Documentos (Entregado, en gestion, para despacho, no distribuido)
+        const estadoRaw = (getFieldValue(r, ['ESTADO', 'ESTADO DEL DOCUMENTO', 'SITUACION', 'SITUACIÓN', 'CONDICION', 'CONDICIÓN']) || getFieldValueByIndex(r, 11)).toUpperCase();
+
+        let estadoCategoria = 'EN GESTIÓN / PARA DESPACHO';
+
+        if (estadoRaw.includes('ENTREGADO')) {
+          estadoCategoria = 'ENTREGADO';
           entregados++;
+        } else if (estadoRaw.includes('NO DISTRIBUIDO') || estadoRaw.includes('DEVUELTO') || estadoRaw.includes('PERDIDO')) {
+          estadoCategoria = 'NO DISTRIBUIDO';
+          noDistribuidos++;
         } else {
-          pendientes++;
+          // Incluye 'EN GESTIÓN', 'PARA DESPACHO', o vacíos
+          estadoCategoria = 'EN GESTIÓN / PARA DESPACHO';
+          enGestionDespacho++;
         }
 
-        let numDias = parseFloat(String(diasStr).replace(',', '.'));
-        if (!isNaN(numDias) && numDias >= 0) {
-          sumDias += numDias;
-          countDias++;
+        // Agrupación de Estados para Gráfico Pie
+        const estadoLabelPie = estadoRaw !== '' ? estadoRaw : 'EN GESTIÓN / PARA DESPACHO';
+        estadosMap[estadoLabelPie] = (estadosMap[estadoLabelPie] || 0) + 1;
+
+        // Agrupación por Departamento Destino
+        if (departamento !== 'SIN ESPECIFICAR') {
+          departamentoDestinoMap[departamento] = (departamentoDestinoMap[departamento] || 0) + 1;
         }
 
-        estadosMap[estado] = (estadosMap[estado] || 0) + 1;
-
+        // Agrupación por Unidad Solicitante (Col. F)
         if (!oficinasMap[oficina]) {
-          oficinasMap[oficina] = { total: 0, entregados: 0, pendientes: 0 };
+          oficinasMap[oficina] = { total: 0, entregados: 0, gestion: 0, nodistribuido: 0 };
         }
         oficinasMap[oficina].total++;
-        if (estado.includes('ENTREGADO') || estado.includes('ATENDIDO') || estado.includes('RECIBIDO') || estado.includes('FINALIZADO')) {
-          oficinasMap[oficina].entregados++;
-        } else {
-          oficinasMap[oficina].pendientes++;
-        }
+        if (estadoCategoria === 'ENTREGADO') oficinasMap[oficina].entregados++;
+        else if (estadoCategoria === 'NO DISTRIBUIDO') oficinasMap[oficina].nodistribuido++;
+        else oficinasMap[oficina].gestion++;
       });
 
       const pctEntregados = total > 0 ? ((entregados / total) * 100).toFixed(1) : '0.0';
-      const pctPendientes = total > 0 ? ((pendientes / total) * 100).toFixed(1) : '0.0';
-      const avgDias = countDias > 0 ? (sumDias / countDias).toFixed(1) : '0.0';
+      const pctGestion = total > 0 ? ((enGestionDespacho / total) * 100).toFixed(1) : '0.0';
+      const pctNoDist = total > 0 ? ((noDistribuidos / total) * 100).toFixed(1) : '0.0';
 
       document.getElementById('kpi-total-mensajeria').innerText = total.toLocaleString();
       document.getElementById('kpi-entregados-mensajeria').innerText = entregados.toLocaleString();
-      document.getElementById('kpi-pendientes-mensajeria').innerText = pendientes.toLocaleString();
-      document.getElementById('kpi-prom-dias-mensajeria').innerText = avgDias;
+      document.getElementById('kpi-gestion-mensajeria').innerText = enGestionDespacho.toLocaleString();
+      document.getElementById('kpi-nodistribuido-mensajeria').innerText = noDistribuidos.toLocaleString();
 
       document.getElementById('kpi-entregados-percent').innerText = `${pctEntregados}% del total`;
-      document.getElementById('kpi-pendientes-percent').innerText = `${pctPendientes}% del total`;
+      document.getElementById('kpi-gestion-percent').innerText = `${pctGestion}% pendientes de entrega`;
+      document.getElementById('kpi-nodistribuido-percent').innerText = `${pctNoDist}% devueltos / no entregados`;
 
-      renderChartsMensajeria(estadosMap, oficinasMap);
+      renderChartsMensajeria(estadosMap, departamentoDestinoMap);
       renderTableOficinasMensajeria(oficinasMap, total);
     }
 
-    function renderChartsMensajeria(estadosMap, oficinasMap) {
+    function renderChartsMensajeria(estadosMap, departamentoDestinoMap) {
       const totalEst = Object.values(estadosMap).reduce((a, b) => a + b, 0);
 
+      // Gráfico 1: Pie de Estados
       const ctx1 = document.getElementById('chartEstadoMensajeria').getContext('2d');
       if (chartEstadoMensajeriaObj) chartEstadoMensajeriaObj.destroy();
       chartEstadoMensajeriaObj = new Chart(ctx1, {
@@ -1390,7 +1391,7 @@
           labels: Object.keys(estadosMap),
           datasets: [{
             data: Object.values(estadosMap),
-            backgroundColor: ['#10b981', '#f59e0b', '#0d9488', '#f43f5e', '#6366f1', '#64748b']
+            backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#f43f5e', '#8b5cf6', '#64748b']
           }]
         },
         options: {
@@ -1407,18 +1408,19 @@
         }
       });
 
-      let sortedOficinas = Object.keys(oficinasMap).sort((a,b) => oficinasMap[b].total - oficinasMap[a].total).slice(0, 7);
-      let dataOficinasTop = sortedOficinas.map(k => oficinasMap[k].total);
+      // Gráfico 2: Mayor Demanda por Departamento Destino
+      let sortedDeps = Object.keys(departamentoDestinoMap).sort((a,b) => departamentoDestinoMap[b] - departamentoDestinoMap[a]).slice(0, 7);
+      let dataDepsTop = sortedDeps.map(k => departamentoDestinoMap[k]);
 
       const ctx2 = document.getElementById('chartOficinasMensajeria').getContext('2d');
       if (chartOficinasMensajeriaObj) chartOficinasMensajeriaObj.destroy();
       chartOficinasMensajeriaObj = new Chart(ctx2, {
         type: 'bar',
         data: {
-          labels: sortedOficinas,
+          labels: sortedDeps,
           datasets: [{
-            label: 'Total de Envíos',
-            data: dataOficinasTop,
+            label: 'Total Envíos',
+            data: dataDepsTop,
             backgroundColor: '#0d9488',
             borderRadius: 6
           }]
@@ -1444,38 +1446,43 @@
       const tbody = document.getElementById('tbody-oficinas-mensajeria');
       const tfootTotal = document.getElementById('tfoot-mensajeria-total');
       const tfootEntregados = document.getElementById('tfoot-mensajeria-entregados');
-      const tfootPendientes = document.getElementById('tfoot-mensajeria-pendientes');
+      const tfootGestion = document.getElementById('tfoot-mensajeria-gestion');
+      const tfootNoDistribuido = document.getElementById('tfoot-mensajeria-nodistribuido');
       tbody.innerHTML = '';
       currentExportMensajeria = [];
 
       let sortedKeys = Object.keys(oficinasMap).sort((a, b) => oficinasMap[b].total - oficinasMap[a].total);
 
       if (sortedKeys.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No hay registros para el filtro seleccionado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-center text-slate-400">No hay registros para el filtro seleccionado.</td></tr>`;
         tfootTotal.innerText = '0';
         tfootEntregados.innerText = '0';
-        tfootPendientes.innerText = '0';
+        tfootGestion.innerText = '0';
+        tfootNoDistribuido.innerText = '0';
         return;
       }
 
       let sumTotal = 0;
       let sumEnt = 0;
-      let sumPen = 0;
+      let sumGes = 0;
+      let sumNoDist = 0;
 
       sortedKeys.forEach((oficinaName, index) => {
         let item = oficinasMap[oficinaName];
         sumTotal += item.total;
         sumEnt += item.entregados;
-        sumPen += item.pendientes;
+        sumGes += item.gestion;
+        sumNoDist += item.nodistribuido;
 
         let pct = totalGeneral > 0 ? ((item.total / totalGeneral) * 100).toFixed(1) : 0;
 
         currentExportMensajeria.push({
           "N°": index + 1,
-          "Unidad Orgánica / Área": oficinaName,
+          "Unidad Orgánica Solicitante": oficinaName,
           "Total Envíos": item.total,
           "Entregados": item.entregados,
-          "En Trámite": item.pendientes,
+          "En Gestión / Despacho": item.gestion,
+          "No Distribuidos": item.nodistribuido,
           "% Participación": `${pct}%`
         });
 
@@ -1486,7 +1493,8 @@
           <td class="py-2.5 px-3 font-bold text-slate-800">${oficinaName}</td>
           <td class="py-2.5 px-3 text-center font-extrabold text-teal-700 bg-teal-50/50 rounded-lg">${item.total.toLocaleString()}</td>
           <td class="py-2.5 px-3 text-center font-bold text-emerald-600">${item.entregados.toLocaleString()}</td>
-          <td class="py-2.5 px-3 text-center font-bold text-amber-600">${item.pendientes.toLocaleString()}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-amber-600">${item.gestion.toLocaleString()}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-rose-600">${item.nodistribuido.toLocaleString()}</td>
           <td class="py-2.5 px-3 text-right font-medium text-slate-600">${pct}%</td>
         `;
         tbody.appendChild(row);
@@ -1494,7 +1502,8 @@
 
       tfootTotal.innerText = sumTotal.toLocaleString();
       tfootEntregados.innerText = sumEnt.toLocaleString();
-      tfootPendientes.innerText = sumPen.toLocaleString();
+      tfootGestion.innerText = sumGes.toLocaleString();
+      tfootNoDistribuido.innerText = sumNoDist.toLocaleString();
     }
 
     function filterTableOficinaMensajeria() {
@@ -1514,7 +1523,7 @@
       const year = document.getElementById('filterYearMensajeria').value;
       const month = document.getElementById('filterMonthMensajeria').value;
       const worksheet = XLSX.utils.json_to_sheet(currentExportMensajeria);
-      worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }];
+      worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 15 }, { wch: 15 }, { wch: 22 }, { wch: 18 }, { wch: 18 }];
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Consolidado_Mensajeria");
       XLSX.writeFile(workbook, `Consolidado_Mensajeria_OACGD_${year}_${month}.xlsx`);
