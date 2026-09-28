@@ -119,7 +119,7 @@
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-servicios">0</div>
-          <p class="text-xs text-slate-400 mt-1">Total solicitudes (Col. A)</p>
+          <p class="text-xs text-slate-400 mt-1">Total registros (Col. A)</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -552,7 +552,11 @@
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-          rawArchivoData = results.data.filter(row => Object.values(row).join('').trim() !== '');
+          // Filtramos únicamente filas que tengan un número válido en la columna A para evitar filas vacías al final
+          rawArchivoData = results.data.filter(row => {
+            const valId = getFieldValue(row, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
+            return valId !== '' && !isNaN(parseInt(valId, 10));
+          });
           applyFiltersArchivo();
         }
       });
@@ -590,9 +594,6 @@
 
       let condicionesMap = {};
       let oficinasMap = {};
-      
-      // Control para agrupar servicios únicos por ID de solicitud y oficina correctamente
-      let solicitudOficinaMap = {};
 
       data.forEach(r => {
         const valSolicitudId = getFieldValue(r, ['N°', 'Nº', 'N° SOLICITUD', 'SOLICITUD', 'ID']);
@@ -628,24 +629,16 @@
           oficinasMap[oficina] = { serviciosSet: new Set(), servicios: 0, docs: 0, imgs: 0 };
         }
         
-        // Acumulamos documentos e imágenes por cada fila (incluyendo el 158 y sus múltiples documentos)
         oficinasMap[oficina].docs += valDocs;
         oficinasMap[oficina].imgs += valImgs;
 
-        // Identificamos el servicio único por su número en la columna A para la oficina
         if (valSolicitudId !== '') {
           oficinasMap[oficina].serviciosSet.add(String(valSolicitudId).trim());
         }
       });
 
-      // Calculamos los servicios por oficina basándonos en los IDs únicos o filas si faltara ID
       Object.keys(oficinasMap).forEach(ofi => {
-        if (oficinasMap[ofi].serviciosSet.size > 0) {
-          oficinasMap[ofi].servicios = oficinasMap[ofi].serviciosSet.size;
-        } else {
-          // Respaldo por conteo de filas de la oficina si no hay ID numérico
-          oficinasMap[ofi].servicios = 1; 
-        }
+        oficinasMap[ofi].servicios = oficinasMap[ofi].serviciosSet.size > 0 ? oficinasMap[ofi].serviciosSet.size : 1;
       });
 
       const totalServicios = maxSolicitudNum > 0 ? maxSolicitudNum : data.length;
@@ -1082,7 +1075,7 @@
 
     function exportSaipToExcelXLSX() {
       if (currentExportSaip.length === 0) return alert("No hay datos cargados.");
-      const year = document.getElementById('filterYearArchivo').value;
+      const year = document.getElementById('filterYearSaip').value;
       const month = document.getElementById('filterMonthArchivo').value;
       const worksheet = XLSX.utils.json_to_sheet(currentExportSaip);
       worksheet['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 25 }, { wch: 18 }, { wch: 20 }, { wch: 18 }];
