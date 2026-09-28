@@ -49,7 +49,7 @@
       </div>
     </div>
 
-    <!-- Navegación según el orden solicitado -->
+    <!-- Navegación -->
     <nav class="bg-slate-900 border-b border-slate-800 text-slate-300 text-xs md:text-sm">
       <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-2 md:space-x-4">
         <button onclick="switchTab('resumen')" id="tab-resumen" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-chart-pie mr-1.5 text-slate-400"></i>Consolidado General</button>
@@ -65,7 +65,7 @@
 
   <main class="max-w-7xl mx-auto px-4 py-6">
 
-    <!-- 1. SECCIÓN ARCHIVO CENTRAL (PRIMERO) -->
+    <!-- 1. SECCIÓN ARCHIVO CENTRAL -->
     <section id="sec-archivo" class="space-y-6">
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
@@ -119,7 +119,7 @@
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-total-servicios">0</div>
-          <p class="text-xs text-slate-400 mt-1">Solicitudes recibidas</p>
+          <p class="text-xs text-slate-400 mt-1">Solicitudes únicas</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
@@ -178,7 +178,7 @@
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow relative">
           <div class="flex justify-between items-center mb-4">
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-chart-column text-amber-600"></i> Mayor Demanda por Unidad Orgánica
+              <i class="fa-solid fa-chart-column text-amber-600"></i> Mayor Demanda por Unidad Orgánica (Todas las Áreas)
             </h3>
             <button onclick="downloadChartImage('chartOficinasArchivo', 'Grafico_Demanda_Oficinas_Archivo.png')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium flex items-center gap-1 transition no-print">
               <i class="fa-solid fa-image text-amber-600"></i> Descargar Gráfico
@@ -195,9 +195,9 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-building text-amber-600"></i> Consolidado de Solicitudes por Oficina Solicitante (Todas las Áreas)
+              <i class="fa-solid fa-building text-amber-600"></i> Consolidado de Solicitudes por Oficina Solicitante
             </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Sincronizado dinámicamente con los Filtros de Archivo Central</p>
+            <p class="text-xs text-slate-500 mt-0.5">Sincronizado con ítems únicos y suma real de documentos</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2 no-print">
@@ -246,7 +246,7 @@
       </div>
     </section>
 
-    <!-- 2. SECCIÓN ACCESO A LA INFORMACIÓN PÚBLICA (SEGUNDO) -->
+    <!-- 2. SECCIÓN ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) -->
     <section id="sec-saip" class="hidden space-y-6">
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
@@ -327,7 +327,7 @@
             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
           </div>
           <div class="text-3xl font-extrabold text-slate-900 mt-2" id="kpi-dias-saip">0</div>
-          <p class="text-xs text-slate-400 mt-1">Días de atención promedio (Col. W)</p>
+          <p class="text-xs text-slate-400 mt-1">Días de atención promedio</p>
         </div>
       </div>
 
@@ -416,53 +416,16 @@
       </div>
     </section>
 
-    <!-- 3. SECCIÓN MESA DE PARTES -->
-    <section id="sec-mesapartes" class="hidden space-y-4">
-      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
-        <h3 class="font-bold text-base text-slate-800">Módulos de Mesa de Partes</h3>
-        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
-      </div>
-    </section>
-
-    <!-- 4. SECCIÓN ATENCIÓN A LA CIUDADANÍA -->
-    <section id="sec-atencion" class="hidden space-y-4">
-      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
-        <h3 class="font-bold text-base text-slate-800">Módulos de Atención a la Ciudadanía</h3>
-        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
-      </div>
-    </section>
-
-    <!-- 5. SECCIÓN CENDOC -->
-    <section id="sec-cendoc" class="hidden space-y-4">
-      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
-        <h3 class="font-bold text-base text-slate-800">Módulos de CENDOC</h3>
-        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
-      </div>
-    </section>
-
-    <!-- 6. SECCIÓN ÁREA ADMINISTRATIVA -->
-    <section id="sec-admin" class="hidden space-y-4">
-      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
-        <h3 class="font-bold text-base text-slate-800">Módulos de Área Administrativa</h3>
-        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
-      </div>
-    </section>
-
-    <!-- VISTA EJECUTIVA TRANSVERSAL -->
-    <section id="sec-resumen" class="hidden space-y-4">
-      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
-        <div class="flex items-center gap-3 text-blue-900 mb-2">
-          <i class="fa-solid fa-circle-info text-xl text-blue-600"></i>
-          <h3 class="font-bold text-base">Consolidado General de la Oficina (OACGD)</h3>
-        </div>
-        <p class="text-sm text-slate-600">Integración de indicadores transversales de las 6 áreas operativas.</p>
-      </div>
-    </section>
+    <!-- Resto de Secciones -->
+    <section id="sec-mesapartes" class="hidden space-y-4"><div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow"><h3 class="font-bold text-base text-slate-800">Módulos de Mesa de Partes</h3><p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p></div></section>
+    <section id="sec-atencion" class="hidden space-y-4"><div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow"><h3 class="font-bold text-base text-slate-800">Módulos de Atención a la Ciudadanía</h3><p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p></div></section>
+    <section id="sec-cendoc" class="hidden space-y-4"><div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow"><h3 class="font-bold text-base text-slate-800">Módulos de CENDOC</h3><p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p></div></section>
+    <section id="sec-admin" class="hidden space-y-4"><div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow"><h3 class="font-bold text-base text-slate-800">Módulos de Área Administrativa</h3><p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p></div></section>
+    <section id="sec-resumen" class="hidden space-y-4"><div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow"><div class="flex items-center gap-3 text-blue-900 mb-2"><i class="fa-solid fa-circle-info text-xl text-blue-600"></i><h3 class="font-bold text-base">Consolidado General de la Oficina (OACGD)</h3></div><p class="text-sm text-slate-600">Integración de indicadores transversales de las 6 áreas operativas.</p></div></section>
 
   </main>
 
   <script>
-    // URLs de exportación CSV
     const SAIP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/10dbxxD902fn7seizSeShVYtOiZQc1KCFBPpnbmo7tCU/export?format=csv';
     const ARCHIVO_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?output=csv';
 
@@ -472,7 +435,6 @@
       '09': 'Setiembre', '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre'
     };
 
-    // Variables globales
     let rawSaipData = [];
     let currentExportSaip = [];
     let chartPlazosObj = null;
@@ -544,7 +506,7 @@
     }
 
     // ==========================================
-    // 1. ARCHIVO CENTRAL
+    // 1. ARCHIVO CENTRAL (ACTUALIZADO)
     // ==========================================
     function fetchArchivoData() {
       Papa.parse(ARCHIVO_SHEET_URL, {
@@ -582,48 +544,72 @@
     }
 
     function updateArchivoDashboard(data) {
-      const totalServicios = data.length;
-      let totalDocs = 0;
-      let totalImagenes = 0;
-      let sumMetricaTiempo = 0;
-      let countTiempos = 0;
-
+      let itemsMap = {};
       let condicionesMap = {};
-      let oficinasMap = {};
 
+      // Agrupar por Número de Ítem (Columna A) para sumar documentos y evitar duplicar solicitudes
       data.forEach(r => {
+        const itemNum = getFieldValue(r, ['SERVICIOS N°', 'N° ', 'N°', 'ITEM']);
         const valDocsStr = getFieldValue(r, ['Nª DE DOC', 'N° DE DOC', 'CANTIDAD', 'DOCUMENTOS']);
         const valImgsStr = getFieldValue(r, ['IMAGENES', 'IMÁGENES', 'FOLIOS']);
         const valMetricaStr = getFieldValue(r, ['METRICA', 'MÉTRICA', 'NIVEL', 'TIEMPO']);
         const condicion = getFieldValue(r, ['CONDICIÓN DE SERVICIO', 'CONDICION DE SERVICIO', 'CONDICION']).toUpperCase() || 'OTROS';
         let oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA']).toUpperCase() || 'SIN OFICINA';
 
-        // Normalizar espacios dobles
         oficina = oficina.replace(/\s+/g, ' ').trim();
 
-        let valDocs = parseFloat(String(valDocsStr).replace(',', '.'));
-        if (isNaN(valDocs) || valDocs < 0) valDocs = 0;
+        let valDocs = parseFloat(String(valDocsStr).replace(',', '.')) || 0;
+        let valImgs = parseFloat(String(valImgsStr).replace(',', '.')) || 0;
+        let valMetrica = parseFloat(String(valMetricaStr).replace(',', '.')) || 0;
 
-        let valImgs = parseFloat(String(valImgsStr).replace(',', '.'));
-        if (isNaN(valImgs) || valImgs < 0) valImgs = 0;
+        // Clave única por servicio/ítem para agrupar filas repetidas (ej. 158)
+        let uniqueKey = itemNum ? `${oficina}_${itemNum}` : `${oficina}_row_${Math.random()}`;
 
-        let valMetrica = parseFloat(String(valMetricaStr).replace(',', '.'));
-        if (!isNaN(valMetrica) && valMetrica > 0) {
-          sumMetricaTiempo += valMetrica;
+        if (!itemsMap[uniqueKey]) {
+          itemsMap[uniqueKey] = {
+            oficina: oficina,
+            condicion: condicion,
+            docs: 0,
+            imgs: 0,
+            metricaSum: 0,
+            metricaCount: 0
+          };
+        }
+        itemsMap[uniqueKey].docs += valDocs;
+        itemsMap[uniqueKey].imgs += valImgs;
+        if (valMetrica > 0) {
+          itemsMap[uniqueKey].metricaSum += valMetrica;
+          itemsMap[uniqueKey].metricaCount++;
+        }
+      });
+
+      let totalServicios = 0;
+      let totalDocs = 0;
+      let totalImagenes = 0;
+      let sumMetricaTiempo = 0;
+      let countTiempos = 0;
+      let oficinasMap = {};
+
+      Object.values(itemsMap).forEach(item => {
+        totalServicios++;
+        totalDocs += item.docs;
+        totalImagenes += item.imgs;
+
+        if (item.metricaCount > 0) {
+          sumMetricaTiempo += (item.metricaSum / item.metricaCount);
           countTiempos++;
         }
 
-        totalDocs += valDocs;
-        totalImagenes += valImgs;
-
-        condicionesMap[condicion] = (condicionesMap[condicion] || 0) + 1;
-
+        let oficina = item.oficina;
         if (!oficinasMap[oficina]) {
           oficinasMap[oficina] = { servicios: 0, docs: 0, imgs: 0 };
         }
         oficinasMap[oficina].servicios += 1;
-        oficinasMap[oficina].docs += valDocs;
-        oficinasMap[oficina].imgs += valImgs;
+        oficinasMap[oficina].docs += item.docs;
+        oficinasMap[oficina].imgs += item.imgs;
+
+        let condicion = item.condicion;
+        condicionesMap[condicion] = (condicionesMap[condicion] || 0) + 1;
       });
 
       const promDocsPorServicio = totalServicios > 0 ? (totalDocs / totalServicios).toFixed(1) : '0.0';
@@ -673,19 +659,19 @@
         }
       });
 
-      // Se toman las 7 oficinas principales para mantener el gráfico legible
-      let sortedOficinasTop = Object.keys(oficinasMap).sort((a,b) => oficinasMap[b].servicios - oficinasMap[a].servicios).slice(0, 7);
-      let dataServiciosTop = sortedOficinasTop.map(k => oficinasMap[k].servicios);
+      // Muestra TODAS las oficinas (sin recortar a Top 7) para que coincida perfectamente con la tabla
+      let sortedOficinasAll = Object.keys(oficinasMap).sort((a,b) => oficinasMap[b].servicios - oficinasMap[a].servicios);
+      let dataServiciosAll = sortedOficinasAll.map(k => oficinasMap[k].servicios);
 
       const ctx2 = document.getElementById('chartOficinasArchivo').getContext('2d');
       if (chartOficinasArchivoObj) chartOficinasArchivoObj.destroy();
       chartOficinasArchivoObj = new Chart(ctx2, {
         type: 'bar',
         data: {
-          labels: sortedOficinasTop,
+          labels: sortedOficinasAll,
           datasets: [{
             label: 'Cantidad de Servicios',
-            data: dataServiciosTop,
+            data: dataServiciosAll,
             backgroundColor: '#d97706',
             borderRadius: 6
           }]
@@ -699,7 +685,7 @@
               anchor: 'end',
               align: 'start',
               color: '#ffffff',
-              font: { weight: 'bold', size: 12 },
+              font: { weight: 'bold', size: 11 },
               formatter: (val) => val > 0 ? val : ''
             }
           }
@@ -715,7 +701,6 @@
       tbody.innerHTML = '';
       currentExportArchivo = [];
 
-      // Ordenar TODAS las oficinas de mayor a menor número de servicios
       let sortedKeys = Object.keys(oficinasMap).sort((a, b) => oficinasMap[b].servicios - oficinasMap[a].servicios);
 
       if (sortedKeys.length === 0) {
@@ -760,7 +745,6 @@
         tbody.appendChild(row);
       });
 
-      // Totales en el pie de tabla coincidiendo al 100% con los KPIs
       tfootServ.innerText = sumServ;
       tfootDocs.innerText = sumDocs.toLocaleString();
       tfootImgs.innerText = sumImgs.toLocaleString();
@@ -870,8 +854,8 @@
 
       data.forEach(r => {
         const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso']);
-        const fechaNotificacionStr = getFieldValue(r, ['Fecha de Notificación', 'FECHA DE NOTIFICACIÓN', 'Fecha de notificacion', 'Fecha Notificacion']);
-        const valorColumnaX = getFieldValue(r, ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ATENCION PLAZO', 'Atención plazo', 'Estado', 'ESTADO']).toUpperCase();
+        const fechaNotificacionStr = getFieldValue(r, ['Fecha de Notificación', 'FECHA DE NOTIFICACIÓN', 'Fecha Notificacion']);
+        const valorColumnaX = getFieldValue(r, ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ATENCION PLAZO', 'Estado', 'ESTADO']).toUpperCase();
         const valorColumnaW = getFieldValue(r, ['DÍAS DE ATENCIÓN', 'DIAS DE ATENCION', 'DÍAS ATENCIÓN', 'DIAS ATENCION']);
 
         const dtIngreso = parseDatePeruvian(fechaIngresoStr);
