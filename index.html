@@ -425,7 +425,7 @@
       </div>
     </section>
 
-    <!-- 5. SECCIÓN MENSAJERÍA (AJUSTADA CON NUEVOS ESTADOS Y METRICAS) -->
+    <!-- 5. SECCIÓN MENSAJERÍA -->
     <section id="sec-mensajeria" class="space-y-6">
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
@@ -471,7 +471,7 @@
         </div>
       </div>
 
-      <!-- Tarjetas KPI Mensajería: Estados Reales en lugar de Plazos Normativos -->
+      <!-- Tarjetas KPI Mensajería -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow">
           <div class="flex justify-between items-center text-slate-500 text-xs font-semibold uppercase tracking-wider">
@@ -700,21 +700,47 @@
       return '';
     }
 
+    // Parser robusto para fechas en formato peruano, ISO u otros
     function parseDatePeruvian(dateStr) {
       if (!dateStr || typeof dateStr !== 'string') return null;
       let clean = dateStr.trim();
-      const match = clean.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
-      if (!match) return null;
+      if (!clean) return null;
 
-      let day = parseInt(match[1], 10);
-      let month = parseInt(match[2], 10) - 1;
-      let year = parseInt(match[3], 10);
+      // 1. Formato YYYY-MM-DD o YYYY/MM/DD
+      let matchIso = clean.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+      if (matchIso) {
+        let year = parseInt(matchIso[1], 10);
+        let month = parseInt(matchIso[2], 10) - 1;
+        let day = parseInt(matchIso[3], 10);
+        if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
+          return new Date(year, month, day);
+        }
+      }
 
-      if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
-      if (year < 100) year += 2000;
-      if (month < 0 || month > 11 || day < 1 || day > 31) return null;
+      // 2. Formato DD/MM/YYYY o DD-MM-YYYY
+      let matchLat = clean.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})/);
+      if (matchLat) {
+        let day = parseInt(matchLat[1], 10);
+        let month = parseInt(matchLat[2], 10) - 1;
+        let year = parseInt(matchLat[3], 10);
+        if (year < 100) year += 2000;
+        if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
+          return new Date(year, month, day);
+        }
+      }
 
-      return new Date(year, month, day);
+      // 3. Intento de detección por año de 4 dígitos si hay texto
+      let matchYear = clean.match(/\b(20\d{2})\b/);
+      if (matchYear) {
+        let year = parseInt(matchYear[1], 10);
+        return new Date(year, 0, 1);
+      }
+
+      // 4. Intento de Parse nativo
+      let jsDate = new Date(clean);
+      if (!isNaN(jsDate.getTime())) return jsDate;
+
+      return null;
     }
 
     function formatDateToKey(d) {
@@ -1043,7 +1069,7 @@
         if (!fechaStr) return selectedYear === 'ALL' && selectedMonth === 'ALL';
 
         const parsedDate = parseDatePeruvian(fechaStr);
-        if (!parsedDate) return true;
+        if (!parsedDate) return selectedYear === 'ALL' && selectedMonth === 'ALL';
 
         const year = String(parsedDate.getFullYear());
         const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
@@ -1270,7 +1296,7 @@
     }
 
     // ==========================================
-    // 3. MENSAJERÍA Y NOTIFICACIONES (ACTUALIZADO)
+    // 3. MENSAJERÍA Y NOTIFICACIONES
     // ==========================================
     function fetchMensajeriaData() {
       Papa.parse(MENSAJERIA_SHEET_URL, {
@@ -1289,13 +1315,17 @@
       const selectedMonth = document.getElementById('filterMonthMensajeria').value;
 
       let filtered = rawMensajeriaData.filter(row => {
-        // Columna C: Fechas de ingreso
+        // Columna C: Fechas de ingreso (índice 2 o buscando por encabezados)
         const fechaIngresoStr = getFieldValue(row, ['FECHA DE INGRESO', 'FECHA INGRESO', 'FECHA', 'FECHA REGISTRO']) || getFieldValueByIndex(row, 2);
         
-        if (!fechaIngresoStr) return selectedYear === 'ALL' && selectedMonth === 'ALL';
+        if (!fechaIngresoStr) {
+          return selectedYear === 'ALL' && selectedMonth === 'ALL';
+        }
 
         const parsedDate = parseDatePeruvian(fechaIngresoStr);
-        if (!parsedDate) return true;
+        if (!parsedDate) {
+          return selectedYear === 'ALL' && selectedMonth === 'ALL';
+        }
 
         const rowYear = String(parsedDate.getFullYear());
         const rowMonth = String(parsedDate.getMonth() + 1).padStart(2, '0');
@@ -1326,7 +1356,7 @@
         // Departamento Destino
         const departamento = (getFieldValue(r, ['DEPARTAMENTO', 'DEPARTAMENTO DESTINO', 'DESTINO', 'LUGAR DE DESTINO']) || getFieldValueByIndex(r, 6)).toUpperCase() || 'LIMA / OTROS';
 
-        // Columna L: Estado de los Documentos (Entregado, en gestion, para despacho, no distribuido)
+        // Columna L: Estado del Documento
         const estadoRaw = (getFieldValue(r, ['ESTADO', 'ESTADO DEL DOCUMENTO', 'SITUACION', 'SITUACIÓN', 'CONDICION', 'CONDICIÓN']) || getFieldValueByIndex(r, 11)).toUpperCase();
 
         let estadoCategoria = 'EN GESTIÓN / PARA DESPACHO';
@@ -1338,21 +1368,17 @@
           estadoCategoria = 'NO DISTRIBUIDO';
           noDistribuidos++;
         } else {
-          // Incluye 'EN GESTIÓN', 'PARA DESPACHO', o vacíos
           estadoCategoria = 'EN GESTIÓN / PARA DESPACHO';
           enGestionDespacho++;
         }
 
-        // Agrupación de Estados para Gráfico Pie
         const estadoLabelPie = estadoRaw !== '' ? estadoRaw : 'EN GESTIÓN / PARA DESPACHO';
         estadosMap[estadoLabelPie] = (estadosMap[estadoLabelPie] || 0) + 1;
 
-        // Agrupación por Departamento Destino
         if (departamento !== 'SIN ESPECIFICAR') {
           departamentoDestinoMap[departamento] = (departamentoDestinoMap[departamento] || 0) + 1;
         }
 
-        // Agrupación por Unidad Solicitante (Col. F)
         if (!oficinasMap[oficina]) {
           oficinasMap[oficina] = { total: 0, entregados: 0, gestion: 0, nodistribuido: 0 };
         }
@@ -1382,7 +1408,6 @@
     function renderChartsMensajeria(estadosMap, departamentoDestinoMap) {
       const totalEst = Object.values(estadosMap).reduce((a, b) => a + b, 0);
 
-      // Gráfico 1: Pie de Estados
       const ctx1 = document.getElementById('chartEstadoMensajeria').getContext('2d');
       if (chartEstadoMensajeriaObj) chartEstadoMensajeriaObj.destroy();
       chartEstadoMensajeriaObj = new Chart(ctx1, {
@@ -1408,7 +1433,6 @@
         }
       });
 
-      // Gráfico 2: Mayor Demanda por Departamento Destino
       let sortedDeps = Object.keys(departamentoDestinoMap).sort((a,b) => departamentoDestinoMap[b] - departamentoDestinoMap[a]).slice(0, 7);
       let dataDepsTop = sortedDeps.map(k => departamentoDestinoMap[k]);
 
