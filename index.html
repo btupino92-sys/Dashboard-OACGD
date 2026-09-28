@@ -20,7 +20,7 @@
 
   <style>
     .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
-    .active-tab { border-bottom: 3px solid #f59e0b; color: #f59e0b; font-weight: 700; background-color: #f8fafc; }
+    .active-tab { border-bottom: 3px solid #d97706; color: #d97706; font-weight: 700; background-color: #f8fafc; }
 
     @media print {
       body * { visibility: hidden; }
@@ -49,7 +49,7 @@
       </div>
     </div>
 
-    <!-- Navegación Reordenada -->
+    <!-- Navegación según el orden solicitado -->
     <nav class="bg-slate-900 border-b border-slate-800 text-slate-300 text-xs md:text-sm">
       <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-2 md:space-x-4">
         <button onclick="switchTab('resumen')" id="tab-resumen" class="py-3 px-3 border-b-2 border-transparent hover:text-white transition whitespace-nowrap"><i class="fa-solid fa-chart-pie mr-1.5 text-slate-400"></i>Consolidado General</button>
@@ -65,7 +65,7 @@
 
   <main class="max-w-7xl mx-auto px-4 py-6">
 
-    <!-- 1. SECCIÓN ARCHIVO CENTRAL -->
+    <!-- 1. SECCIÓN ARCHIVO CENTRAL (PRIMERO) -->
     <section id="sec-archivo" class="space-y-6">
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
@@ -190,12 +190,12 @@
         </div>
       </div>
 
-      <!-- TABLA DE CONSOLIDADO ARCHIVO CENTRAL -->
+      <!-- Tabla Consolidada Archivo Central -->
       <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow space-y-4" id="printable-archivo">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-building text-amber-600"></i> Consolidado de Solicitudes por Oficina Solicitante
+              <i class="fa-solid fa-building text-amber-600"></i> Consolidado de Solicitudes por Oficina Solicitante (Todas las Áreas)
             </h3>
             <p class="text-xs text-slate-500 mt-0.5">Sincronizado dinámicamente con los Filtros de Archivo Central</p>
           </div>
@@ -246,7 +246,7 @@
       </div>
     </section>
 
-    <!-- 2. SECCIÓN ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) -->
+    <!-- 2. SECCIÓN ACCESO A LA INFORMACIÓN PÚBLICA (SEGUNDO) -->
     <section id="sec-saip" class="hidden space-y-6">
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
@@ -362,7 +362,7 @@
         </div>
       </div>
 
-      <!-- TABLA DE CONSOLIDADO SAIP -->
+      <!-- Tabla Consolidada SAIP -->
       <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow space-y-4" id="printable-area">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
@@ -416,21 +416,53 @@
       </div>
     </section>
 
-    <!-- OTRAS SECCIONES -->
+    <!-- 3. SECCIÓN MESA DE PARTES -->
+    <section id="sec-mesapartes" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
+        <h3 class="font-bold text-base text-slate-800">Módulos de Mesa de Partes</h3>
+        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
+      </div>
+    </section>
+
+    <!-- 4. SECCIÓN ATENCIÓN A LA CIUDADANÍA -->
+    <section id="sec-atencion" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
+        <h3 class="font-bold text-base text-slate-800">Módulos de Atención a la Ciudadanía</h3>
+        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
+      </div>
+    </section>
+
+    <!-- 5. SECCIÓN CENDOC -->
+    <section id="sec-cendoc" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
+        <h3 class="font-bold text-base text-slate-800">Módulos de CENDOC</h3>
+        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
+      </div>
+    </section>
+
+    <!-- 6. SECCIÓN ÁREA ADMINISTRATIVA -->
+    <section id="sec-admin" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
+        <h3 class="font-bold text-base text-slate-800">Módulos de Área Administrativa</h3>
+        <p class="text-xs text-slate-500 mt-1">Próximamente disponible.</p>
+      </div>
+    </section>
+
+    <!-- VISTA EJECUTIVA TRANSVERSAL -->
     <section id="sec-resumen" class="hidden space-y-4">
       <div class="bg-white p-6 rounded-xl border border-slate-200 card-shadow">
         <div class="flex items-center gap-3 text-blue-900 mb-2">
           <i class="fa-solid fa-circle-info text-xl text-blue-600"></i>
-          <h3 class="font-bold text-base">Consolidado General de la Oficina</h3>
+          <h3 class="font-bold text-base">Consolidado General de la Oficina (OACGD)</h3>
         </div>
-        <p class="text-sm text-slate-600">Integración de indicadores transversales de la OACGD.</p>
+        <p class="text-sm text-slate-600">Integración de indicadores transversales de las 6 áreas operativas.</p>
       </div>
     </section>
 
   </main>
 
   <script>
-    // URLs de exportación CSV desde Google Sheets
+    // URLs de exportación CSV
     const SAIP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/10dbxxD902fn7seizSeShVYtOiZQc1KCFBPpnbmo7tCU/export?format=csv';
     const ARCHIVO_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXKObM-7skB2rFt2Zs_1amOxgqktlCkCebmwUXJWrYPK34KBLZK8riM4pjZyruzkc20tS3KxV9zxxr/pub?output=csv';
 
@@ -512,7 +544,7 @@
     }
 
     // ==========================================
-    // LÓGICA DE ARCHIVO CENTRAL
+    // 1. ARCHIVO CENTRAL
     // ==========================================
     function fetchArchivoData() {
       Papa.parse(ARCHIVO_SHEET_URL, {
@@ -564,7 +596,10 @@
         const valImgsStr = getFieldValue(r, ['IMAGENES', 'IMÁGENES', 'FOLIOS']);
         const valMetricaStr = getFieldValue(r, ['METRICA', 'MÉTRICA', 'NIVEL', 'TIEMPO']);
         const condicion = getFieldValue(r, ['CONDICIÓN DE SERVICIO', 'CONDICION DE SERVICIO', 'CONDICION']).toUpperCase() || 'OTROS';
-        const oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA']).toUpperCase() || 'SIN OFICINA';
+        let oficina = getFieldValue(r, ['OFICINA', 'UNIDAD ORGÁNICA']).toUpperCase() || 'SIN OFICINA';
+
+        // Normalizar espacios dobles
+        oficina = oficina.replace(/\s+/g, ' ').trim();
 
         let valDocs = parseFloat(String(valDocsStr).replace(',', '.'));
         if (isNaN(valDocs) || valDocs < 0) valDocs = 0;
@@ -638,15 +673,16 @@
         }
       });
 
-      let sortedOficinas = Object.keys(oficinasMap).sort((a,b) => oficinasMap[b].servicios - oficinasMap[a].servicios).slice(0, 7);
-      let dataServiciosTop = sortedOficinas.map(k => oficinasMap[k].servicios);
+      // Se toman las 7 oficinas principales para mantener el gráfico legible
+      let sortedOficinasTop = Object.keys(oficinasMap).sort((a,b) => oficinasMap[b].servicios - oficinasMap[a].servicios).slice(0, 7);
+      let dataServiciosTop = sortedOficinasTop.map(k => oficinasMap[k].servicios);
 
       const ctx2 = document.getElementById('chartOficinasArchivo').getContext('2d');
       if (chartOficinasArchivoObj) chartOficinasArchivoObj.destroy();
       chartOficinasArchivoObj = new Chart(ctx2, {
         type: 'bar',
         data: {
-          labels: sortedOficinas,
+          labels: sortedOficinasTop,
           datasets: [{
             label: 'Cantidad de Servicios',
             data: dataServiciosTop,
@@ -679,6 +715,7 @@
       tbody.innerHTML = '';
       currentExportArchivo = [];
 
+      // Ordenar TODAS las oficinas de mayor a menor número de servicios
       let sortedKeys = Object.keys(oficinasMap).sort((a, b) => oficinasMap[b].servicios - oficinasMap[a].servicios);
 
       if (sortedKeys.length === 0) {
@@ -723,6 +760,7 @@
         tbody.appendChild(row);
       });
 
+      // Totales en el pie de tabla coincidiendo al 100% con los KPIs
       tfootServ.innerText = sumServ;
       tfootDocs.innerText = sumDocs.toLocaleString();
       tfootImgs.innerText = sumImgs.toLocaleString();
@@ -752,7 +790,7 @@
     }
 
     // ==========================================
-    // LÓGICA DE ACCESO A LA INFORMACIÓN (SAIP)
+    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP)
     // ==========================================
     function fetchSaipData() {
       Papa.parse(SAIP_SHEET_URL, {
