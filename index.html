@@ -1085,21 +1085,41 @@
       let areasConsolidadas = {};
 
       data.forEach(r => {
-        const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']) || getFieldValueByIndex(row, 13);
+        const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']) || getFieldValueByIndex(r, 13);
         const dtIngreso = parseDatePeruvian(fechaIngresoStr);
 
-        // Obtenemos el texto exacto de la Columna X (índice 23)
-        const valorColumnaX = (getFieldValue(r, ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ESTADO']) || getFieldValueByIndex(r, 23)).trim().toLowerCase();
+        // Búsqueda robusta en la Columna X (índice 23) o barriendo los valores de la fila
+        let valorColumnaX = '';
+        const possibleXKeys = ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ESTADO', 'TIPO'];
+        valorColumnaX = getFieldValue(r, possibleXKeys);
+        if (!valorColumnaX) {
+          const keys = Object.keys(r);
+          if (keys.length > 23 && r[keys[23]] !== undefined) {
+            valorColumnaX = String(r[keys[23]]).trim();
+          }
+        }
+        if (!valorColumnaX) {
+          for (let k of Object.keys(r)) {
+            let val = String(r[k]).trim();
+            let vLower = val.toLowerCase();
+            if (vLower.includes('dentro del plazo') || vLower.includes('fuera del plazo') || vLower.includes('fuera de plazo') || vLower.includes('encauzad') || vLower.includes('improcedent')) {
+              valorColumnaX = val;
+              break;
+            }
+          }
+        }
 
-        if (valorColumnaX === '' || !valorColumnaX) {
+        const xClean = valorColumnaX.trim().toLowerCase();
+
+        if (xClean === '' || !xClean) {
           pendientes++;
-        } else if (valorColumnaX.includes('dentro del plazo')) {
+        } else if (xClean.includes('dentro del plazo')) {
           dentroPlazo++;
-        } else if (valorColumnaX.includes('fuera del plazo') || valorColumnaX.includes('fuera de plazo')) {
+        } else if (xClean.includes('fuera del plazo') || xClean.includes('fuera de plazo')) {
           fueraPlazo++;
-        } else if (valorColumnaX.includes('encauzad')) {
+        } else if (xClean.includes('encauzad')) {
           encauzadas++;
-        } else if (valorColumnaX.includes('improcedent')) {
+        } else if (xClean.includes('improcedent')) {
           improcedentes++;
         } else {
           pendientes++;
