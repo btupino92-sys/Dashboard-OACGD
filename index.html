@@ -302,11 +302,11 @@
 
         <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow">
           <div class="flex justify-between items-center text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
-            <span>Atendidas (En Plazo)</span>
+            <span>Atendidas (Dentro Plazo)</span>
             <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-circle-check text-xs"></i></div>
           </div>
-          <div class="text-2xl font-extrabold text-emerald-600 mt-2" id="kpi-plazo-saip">0</div>
-          <p class="text-[11px] text-emerald-600 mt-1 font-semibold" id="kpi-plazo-percent">0% del total</p>
+          <div class="text-2xl font-extrabold text-emerald-600 mt-2" id="kpi-dentroplazo-saip">0</div>
+          <p class="text-[11px] text-emerald-600 mt-1 font-semibold" id="kpi-dentroplazo-percent">0% del total</p>
         </div>
 
         <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow">
@@ -1054,7 +1054,7 @@
       const selectedMonth = document.getElementById('filterMonthSaip').value;
 
       let filtered = rawSaipData.filter(row => {
-        // Obtenemos la fecha de ingreso específicamente de la columna N (índice 13) o por nombre
+        // Columna N (Fecha de ingreso)
         const fechaStr = getFieldValue(row, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']) || getFieldValueByIndex(row, 13);
         if (!fechaStr) return selectedYear === 'ALL' && selectedMonth === 'ALL';
 
@@ -1075,7 +1075,7 @@
 
     function updateSaipDashboard(data) {
       const total = data.length;
-      let enPlazo = 0;
+      let dentroPlazo = 0;
       let fueraPlazo = 0;
       let encauzadas = 0;
       let improcedentes = 0;
@@ -1085,24 +1085,23 @@
       let areasConsolidadas = {};
 
       data.forEach(r => {
-        const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']) || getFieldValueByIndex(r, 13);
+        const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']) || getFieldValueByIndex(row, 13);
         const dtIngreso = parseDatePeruvian(fechaIngresoStr);
 
-        // Obtenemos el estado de la Columna X (índice 23) o por nombre aproximado
-        const valorColumnaX = (getFieldValue(r, ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'SOLICITUDES ATENDIDAS', 'ESTADO', 'ATENCIÓN']) || getFieldValueByIndex(r, 23)).toUpperCase();
+        // Obtenemos el texto exacto de la Columna X (índice 23)
+        const valorColumnaX = (getFieldValue(r, ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ESTADO']) || getFieldValueByIndex(r, 23)).trim().toLowerCase();
 
-        if (valorColumnaX.includes('DENTRO DEL PLAZO') || (valorColumnaX.includes('EN PLAZO') && !valorColumnaX.includes('FUERA'))) {
-          enPlazo++;
-        } else if (valorColumnaX.includes('FUERA DEL PLAZO') || valorColumnaX.includes('FUERA DE PLAZO')) {
-          fueraPlazo++;
-        } else if (valorColumnaX.includes('ENCAUZADA')) {
-          encauzadas++;
-        } else if (valorColumnaX.includes('IMPROCEDENTE')) {
-          improcedentes++;
-        } else if (valorColumnaX === '' || !valorColumnaX) {
+        if (valorColumnaX === '' || !valorColumnaX) {
           pendientes++;
+        } else if (valorColumnaX.includes('dentro del plazo')) {
+          dentroPlazo++;
+        } else if (valorColumnaX.includes('fuera del plazo') || valorColumnaX.includes('fuera de plazo')) {
+          fueraPlazo++;
+        } else if (valorColumnaX.includes('encauzad')) {
+          encauzadas++;
+        } else if (valorColumnaX.includes('improcedent')) {
+          improcedentes++;
         } else {
-          // Si el texto de columna X contiene "atendida" genérica pero no especifica subgrupo, la podemos clasificar o tomar como pendiente/otro
           pendientes++;
         }
 
@@ -1125,30 +1124,30 @@
 
       // Actualización de KPIs en el DOM
       document.getElementById('kpi-total-saip').innerText = total;
-      document.getElementById('kpi-plazo-saip').innerText = enPlazo;
+      document.getElementById('kpi-dentroplazo-saip').innerText = dentroPlazo;
       document.getElementById('kpi-fueraplazo-saip').innerText = fueraPlazo;
       document.getElementById('kpi-encauzadas-saip').innerText = encauzadas;
       document.getElementById('kpi-improcedentes-saip').innerText = improcedentes;
       document.getElementById('kpi-pendientes-saip').innerText = pendientes;
 
-      const pPlazo = total > 0 ? ((enPlazo / total) * 100).toFixed(1) : '0.0';
+      const pDentro = total > 0 ? ((dentroPlazo / total) * 100).toFixed(1) : '0.0';
       const pFuera = total > 0 ? ((fueraPlazo / total) * 100).toFixed(1) : '0.0';
       const pEncau = total > 0 ? ((encauzadas / total) * 100).toFixed(1) : '0.0';
       const pImproc = total > 0 ? ((improcedentes / total) * 100).toFixed(1) : '0.0';
       const pPend = total > 0 ? ((pendientes / total) * 100).toFixed(1) : '0.0';
 
-      document.getElementById('kpi-plazo-percent').innerText = `${pPlazo}% del total`;
+      document.getElementById('kpi-dentroplazo-percent').innerText = `${pDentro}% del total`;
       document.getElementById('kpi-fueraplazo-percent').innerText = `${pFuera}% del total`;
       document.getElementById('kpi-encauzadas-percent').innerText = `${pEncau}% del total`;
       document.getElementById('kpi-improcedentes-percent').innerText = `${pImproc}% del total`;
       document.getElementById('kpi-pendientes-percent').innerText = `${pPend}% del total`;
 
-      renderChartsSaip(enPlazo, fueraPlazo, encauzadas, improcedentes, pendientes, modalidades);
+      renderChartsSaip(dentroPlazo, fueraPlazo, encauzadas, improcedentes, pendientes, modalidades);
       renderTableAreasSaip(areasConsolidadas, total);
     }
 
-    function renderChartsSaip(enPlazo, fueraPlazo, encauzadas, improcedentes, pendientes, modalidades) {
-      const totalPie = enPlazo + fueraPlazo + encauzadas + improcedentes + pendientes;
+    function renderChartsSaip(dentroPlazo, fueraPlazo, encauzadas, improcedentes, pendientes, modalidades) {
+      const totalPie = dentroPlazo + fueraPlazo + encauzadas + improcedentes + pendientes;
 
       const ctx1 = document.getElementById('chartPlazos').getContext('2d');
       if (chartPlazosObj) chartPlazosObj.destroy();
@@ -1157,7 +1156,7 @@
         data: {
           labels: ['Dentro del Plazo', 'Fuera del Plazo', 'Solicitudes Encauzadas', 'Solicitudes Improcedentes', 'Pendientes'],
           datasets: [{
-            data: [enPlazo, fueraPlazo, encauzadas, improcedentes, pendientes],
+            data: [dentroPlazo, fueraPlazo, encauzadas, improcedentes, pendientes],
             backgroundColor: ['#10b981', '#f43f5e', '#6366f1', '#f59e0b', '#cbd5e1']
           }]
         },
