@@ -248,7 +248,7 @@
       <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
         <div>
           <h2 class="text-base md:text-lg font-bold text-slate-900">Matriz de Acceso a la Información Pública (SAIP)</h2>
-          <p class="text-xs text-slate-500">Monitoreo por Fechas de Ingreso (Col. N) y Gestión de Solicitudes (Col. X)</p>
+          <p class="text-xs text-slate-500">Monitoreo por Fechas de Ingreso (Col. N) y Gestión de Solicitudes (Col. ATENCION PLAZO)</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
@@ -351,7 +351,7 @@
         <div class="bg-white p-5 rounded-xl border border-slate-200 card-shadow relative">
           <div class="flex justify-between items-center mb-4">
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-chart-pie text-blue-600"></i> Distribución de Estados (Columna X)
+              <i class="fa-solid fa-chart-pie text-blue-600"></i> Distribución de Estados (ATENCION PLAZO)
             </h3>
             <button onclick="downloadChartImage('chartPlazos', 'Grafico_Cumplimiento_Plazos_SAIP.png')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-medium flex items-center gap-1 transition no-print">
               <i class="fa-solid fa-image text-blue-600"></i> Descargar Gráfico
@@ -1035,7 +1035,7 @@
     }
 
     // ==========================================
-    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) - LECTURA SEGURA COLUMNA X / ESTADOS
+    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) - LECTURA EXACTA DE "ATENCION PLAZO"
     // ==========================================
     function fetchSaipData() {
       Papa.parse(SAIP_SHEET_URL, {
@@ -1087,20 +1087,15 @@
         const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']) || getFieldValueByIndex(r, 13);
         const dtIngreso = parseDatePeruvian(fechaIngresoStr);
 
-        // LECTURA ESTRICTA DE LA COLUMNA DE ESTADO (COLUMNA X / ÍNDICE 23 O CABECERAS ESPECÍFICAS)
-        let valEstado = '';
-        const keys = Object.keys(r);
-        
-        if (keys.length > 23 && r[keys[23]] !== undefined) {
-          valEstado = String(r[keys[23]]).trim();
-        }
+        // BÚSQUEDA ESPECÍFICA DE LA COLUMNA CON CABECERA "ATENCION PLAZO" (Y VARIACIONES)
+        let valEstado = getFieldValue(r, [' ATENCION PLAZO', 'ATENCION PLAZO', 'ATENCIÓN PLAZO', 'ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ESTADO', 'TIPO']);
         if (!valEstado) {
-          valEstado = getFieldValue(r, ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ESTADO', 'TIPO']);
+          valEstado = getFieldValueByIndex(r, 23); // Respaldo por índice por si varía
         }
 
-        const xClean = valEstado.toUpperCase();
+        const xClean = String(valEstado).trim().toUpperCase();
 
-        // CLASIFICACIÓN PRECISA SIN FALSOS POSITIVOS
+        // CLASIFICACIÓN EXACTA Y LIMPIA
         if (xClean.includes('DENTRO DEL PLAZO') || xClean === 'DENTRO PLAZO') {
           dentroPlazo++;
         } else if (xClean.includes('FUERA DE PLAZO') || xClean === 'FUERA PLAZO') {
@@ -1110,7 +1105,7 @@
         } else if (xClean === 'IMPROCEDENTE' || xClean === 'IMPROCEDENTES' || (xClean.includes('IMPROCEDENT') && !xClean.includes('PLAZO'))) {
           improcedentes++;
         } else {
-          // Si la celda está vacía o no tiene un estado válido, cuenta como pendiente legítimo
+          // Si está vacío (como en Octubre) u otro texto no reconocido, cuenta como pendiente
           pendientes++;
         }
 
