@@ -1123,7 +1123,7 @@
         areasConsolidadas[areaKey] = (areasConsolidadas[areaKey] || 0) + 1;
       });
 
-      // Base estricta del 100% para Dentro, Fuera y Pendientes
+      // Base estricta del 100% EXCLUSIVA para las 3 tarjetas de plazos (Dentro, Fuera, Pendientes)
       const totalPlazosBase = dentroPlazo + fueraPlazo + pendientes;
 
       document.getElementById('kpi-total-saip').innerText = total;
@@ -1133,11 +1133,12 @@
       document.getElementById('kpi-improcedentes-saip').innerText = improcedentes;
       document.getElementById('kpi-pendientes-saip').innerText = pendientes;
 
-      // Porcentajes inferiores de las tarjetas
+      // Porcentajes inferiores de las tarjetas de plazos calculados contra las 3 categorías
       const pDentro = totalPlazosBase > 0 ? ((dentroPlazo / totalPlazosBase) * 100).toFixed(1) : '0.0';
       const pFuera = totalPlazosBase > 0 ? ((fueraPlazo / totalPlazosBase) * 100).toFixed(1) : '0.0';
       const pPend = totalPlazosBase > 0 ? ((pendientes / totalPlazosBase) * 100).toFixed(1) : '0.0';
 
+      // Encauzadas e Improcedentes calculadas contra el total general de solicitudes
       const pEncau = total > 0 ? ((encauzadas / total) * 100).toFixed(1) : '0.0';
       const pImproc = total > 0 ? ((improcedentes / total) * 100).toFixed(1) : '0.0';
 
