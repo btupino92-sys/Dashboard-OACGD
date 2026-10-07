@@ -306,7 +306,7 @@
             <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-circle-check text-xs"></i></div>
           </div>
           <div class="text-2xl font-extrabold text-emerald-600 mt-2" id="kpi-dentroplazo-saip">0</div>
-          <p class="text-[11px] text-emerald-600 mt-1 font-semibold" id="kpi-dentroplazo-percent">0% del total</p>
+          <p class="text-[11px] text-emerald-600 mt-1 font-semibold" id="kpi-dentroplazo-percent">0% de atenciones</p>
         </div>
 
         <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow">
@@ -315,7 +315,7 @@
             <div class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation text-xs"></i></div>
           </div>
           <div class="text-2xl font-extrabold text-rose-600 mt-2" id="kpi-fueraplazo-saip">0</div>
-          <p class="text-[11px] text-rose-500 mt-1 font-semibold" id="kpi-fueraplazo-percent">0% del total</p>
+          <p class="text-[11px] text-rose-500 mt-1 font-semibold" id="kpi-fueraplazo-percent">0% de atenciones</p>
         </div>
 
         <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow">
@@ -342,7 +342,7 @@
             <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center"><i class="fa-solid fa-clock text-xs"></i></div>
           </div>
           <div class="text-2xl font-extrabold text-slate-700 mt-2" id="kpi-pendientes-saip">0</div>
-          <p class="text-[11px] text-slate-500 mt-1 font-semibold" id="kpi-pendientes-percent">0% del total</p>
+          <p class="text-[11px] text-slate-500 mt-1 font-semibold" id="kpi-pendientes-percent">0% de atenciones</p>
         </div>
       </div>
 
@@ -1035,7 +1035,7 @@
     }
 
     // ==========================================
-    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) - LECTURA EXACTA DE "ATENCION PLAZO"
+    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP)
     // ==========================================
     function fetchSaipData() {
       Papa.parse(SAIP_SHEET_URL, {
@@ -1087,15 +1087,13 @@
         const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']) || getFieldValueByIndex(r, 13);
         const dtIngreso = parseDatePeruvian(fechaIngresoStr);
 
-        // BÚSQUEDA ESPECÍFICA DE LA COLUMNA CON CABECERA "ATENCION PLAZO" (Y VARIACIONES)
         let valEstado = getFieldValue(r, [' ATENCION PLAZO', 'ATENCION PLAZO', 'ATENCIÓN PLAZO', 'ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ESTADO', 'TIPO']);
         if (!valEstado) {
-          valEstado = getFieldValueByIndex(r, 23); // Respaldo por índice por si varía
+          valEstado = getFieldValueByIndex(r, 23);
         }
 
         const xClean = String(valEstado).trim().toUpperCase();
 
-        // CLASIFICACIÓN EXACTA Y LIMPIA
         if (xClean.includes('DENTRO DEL PLAZO') || xClean === 'DENTRO PLAZO') {
           dentroPlazo++;
         } else if (xClean.includes('FUERA DE PLAZO') || xClean === 'FUERA PLAZO') {
@@ -1105,7 +1103,6 @@
         } else if (xClean === 'IMPROCEDENTE' || xClean === 'IMPROCEDENTES' || (xClean.includes('IMPROCEDENT') && !xClean.includes('PLAZO'))) {
           improcedentes++;
         } else {
-          // Si está vacío (como en Octubre) u otro texto no reconocido, cuenta como pendiente
           pendientes++;
         }
 
@@ -1126,7 +1123,9 @@
         areasConsolidadas[areaKey] = (areasConsolidadas[areaKey] || 0) + 1;
       });
 
-      // Actualización de KPIs en el DOM
+      // Total de atenciones/plazos base para el 100% de plazos (Dentro + Fuera + Pendientes)
+      const totalAtencionesPlazo = dentroPlazo + fueraPlazo + pendientes;
+
       document.getElementById('kpi-total-saip').innerText = total;
       document.getElementById('kpi-dentroplazo-saip').innerText = dentroPlazo;
       document.getElementById('kpi-fueraplazo-saip').innerText = fueraPlazo;
@@ -1134,24 +1133,28 @@
       document.getElementById('kpi-improcedentes-saip').innerText = improcedentes;
       document.getElementById('kpi-pendientes-saip').innerText = pendientes;
 
-      const pDentro = total > 0 ? ((dentroPlazo / total) * 100).toFixed(1) : '0.0';
-      const pFuera = total > 0 ? ((fueraPlazo / total) * 100).toFixed(1) : '0.0';
+      // Porcentajes basados estrictamente en la base de plazos (Dentro, Fuera, Pendientes)
+      const pDentro = totalAtencionesPlazo > 0 ? ((dentroPlazo / totalAtencionesPlazo) * 100).toFixed(1) : '0.0';
+      const pFuera = totalAtencionesPlazo > 0 ? ((fueraPlazo / totalAtencionesPlazo) * 100).toFixed(1) : '0.0';
+      const pPend = totalAtencionesPlazo > 0 ? ((pendientes / totalAtencionesPlazo) * 100).toFixed(1) : '0.0';
+
+      // Porcentajes para Encauzadas e Improcedentes respecto al total general de solicitudes
       const pEncau = total > 0 ? ((encauzadas / total) * 100).toFixed(1) : '0.0';
       const pImproc = total > 0 ? ((improcedentes / total) * 100).toFixed(1) : '0.0';
-      const pPend = total > 0 ? ((pendientes / total) * 100).toFixed(1) : '0.0';
 
-      document.getElementById('kpi-dentroplazo-percent').innerText = `${pDentro}% del total`;
-      document.getElementById('kpi-fueraplazo-percent').innerText = `${pFuera}% del total`;
+      document.getElementById('kpi-dentroplazo-percent').innerText = `${pDentro}% de atenciones`;
+      document.getElementById('kpi-fueraplazo-percent').innerText = `${pFuera}% de atenciones`;
       document.getElementById('kpi-encauzadas-percent').innerText = `${pEncau}% del total`;
       document.getElementById('kpi-improcedentes-percent').innerText = `${pImproc}% del total`;
-      document.getElementById('kpi-pendientes-percent').innerText = `${pPend}% del total`;
+      document.getElementById('kpi-pendientes-percent').innerText = `${pPend}% de atenciones`;
 
       renderChartsSaip(dentroPlazo, fueraPlazo, encauzadas, improcedentes, pendientes, modalidades);
       renderTableAreasSaip(areasConsolidadas, total);
     }
 
     function renderChartsSaip(dentroPlazo, fueraPlazo, encauzadas, improcedentes, pendientes, modalidades) {
-      const totalPie = dentroPlazo + fueraPlazo + encauzadas + improcedentes + pendientes;
+      const totalPlazosPie = dentroPlazo + fueraPlazo + pendientes;
+      const totalGralPie = dentroPlazo + fueraPlazo + encauzadas + improcedentes + pendientes;
 
       const ctx1 = document.getElementById('chartPlazos').getContext('2d');
       if (chartPlazosObj) chartPlazosObj.destroy();
@@ -1171,7 +1174,17 @@
             datalabels: {
               color: '#ffffff',
               font: { weight: 'bold', size: 11 },
-              formatter: (val) => val > 0 ? `${val}\n(${((val/totalPie)*100).toFixed(1)}%)` : '',
+              formatter: (val, ctx) => {
+                if (val <= 0) return '';
+                let label = ctx.chart.data.labels[ctx.dataIndex];
+                let pct = 0;
+                if (label.includes('Plazo') || label.includes('Pendientes')) {
+                  pct = totalPlazosPie > 0 ? ((val / totalPlazosPie) * 100).toFixed(1) : 0;
+                } else {
+                  pct = totalGralPie > 0 ? ((val / totalGralPie) * 100).toFixed(1) : 0;
+                }
+                return `${val}\n(${pct}%)`;
+              },
               textAlign: 'center'
             }
           }
