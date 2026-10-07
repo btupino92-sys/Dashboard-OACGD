@@ -1054,7 +1054,6 @@
       const selectedMonth = document.getElementById('filterMonthSaip').value;
 
       let filtered = rawSaipData.filter(row => {
-        // Columna N (Fecha de ingreso)
         const fechaStr = getFieldValue(row, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']) || getFieldValueByIndex(row, 13);
         if (!fechaStr) return selectedYear === 'ALL' && selectedMonth === 'ALL';
 
@@ -1088,39 +1087,38 @@
         const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']) || getFieldValueByIndex(r, 13);
         const dtIngreso = parseDatePeruvian(fechaIngresoStr);
 
-        // Búsqueda robusta en la Columna X (índice 23) o barriendo los valores de la fila
         let valorColumnaX = '';
-        const possibleXKeys = ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ESTADO', 'TIPO'];
-        valorColumnaX = getFieldValue(r, possibleXKeys);
-        if (!valorColumnaX) {
-          const keys = Object.keys(r);
-          if (keys.length > 23 && r[keys[23]] !== undefined) {
-            valorColumnaX = String(r[keys[23]]).trim();
-          }
+        const keys = Object.keys(r);
+        
+        // 1. Intentar leer la Columna X (índice 23)
+        if (keys.length > 23 && r[keys[23]] !== undefined) {
+          valorColumnaX = String(r[keys[23]]).trim();
         }
+
+        // 2. Si está vacía, buscar en toda la fila el texto exacto que coincida
         if (!valorColumnaX) {
-          for (let k of Object.keys(r)) {
+          for (let k of keys) {
             let val = String(r[k]).trim();
-            let vLower = val.toLowerCase();
-            if (vLower.includes('dentro') || vLower.includes('fuera') || vLower.includes('encauzad') || vLower.includes('improcedent')) {
+            let vUp = val.toUpperCase();
+            if (vUp.includes('DENTRO DEL PLAZO') || vUp.includes('FUERA DE PLAZO') || vUp.includes('ENCAUZADO') || vUp.includes('IMPROCEDENTE')) {
               valorColumnaX = val;
               break;
             }
           }
         }
 
-        const xClean = valorColumnaX.trim().toLowerCase();
+        const xClean = valorColumnaX.trim().toUpperCase();
 
-        // VALIDACIÓN CORREGIDA Y ROBUSTA PARA DETECTAR CUALQUIER VARIANTE EN COLUMNA X
+        // VALIDACIÓN ROBUSTA PARA DETECTAR LAS OPCIONES DE LA COLUMNA X
         if (xClean === '' || !xClean) {
           pendientes++;
-        } else if (xClean.includes('dentro del plazo') || xClean.includes('dentro de plazo') || xClean.includes('dentro plazo')) {
+        } else if (xClean.includes('DENTRO DEL PLAZO') || xClean.includes('DENTRO DE PLAZO') || xClean.includes('DENTRO PLAZO')) {
           dentroPlazo++;
-        } else if (xClean.includes('fuera del plazo') || xClean.includes('fuera de plazo') || xClean.includes('fuera plazo')) {
+        } else if (xClean.includes('FUERA DEL PLAZO') || xClean.includes('FUERA DE PLAZO') || xClean.includes('FUERA PLAZO')) {
           fueraPlazo++;
-        } else if (xClean.includes('encauzad')) {
+        } else if (xClean.includes('ENCAUZAD')) {
           encauzadas++;
-        } else if (xClean.includes('improcedent')) {
+        } else if (xClean.includes('IMPROCEDENT')) {
           improcedentes++;
         } else {
           pendientes++;
