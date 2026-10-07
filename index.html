@@ -1035,7 +1035,7 @@
     }
 
     // ==========================================
-    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) - ACTUALIZADO
+    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) - ACTUALIZADO Y CORREGIDO
     // ==========================================
     function fetchSaipData() {
       Papa.parse(SAIP_SHEET_URL, {
@@ -1102,7 +1102,7 @@
           for (let k of Object.keys(r)) {
             let val = String(r[k]).trim();
             let vLower = val.toLowerCase();
-            if (vLower.includes('dentro del plazo') || vLower.includes('fuera del plazo') || vLower.includes('fuera de plazo') || vLower.includes('encauzad') || vLower.includes('improcedent')) {
+            if (vLower.includes('dentro') || vLower.includes('fuera') || vLower.includes('encauzad') || vLower.includes('improcedent')) {
               valorColumnaX = val;
               break;
             }
@@ -1111,11 +1111,12 @@
 
         const xClean = valorColumnaX.trim().toLowerCase();
 
+        // VALIDACIÓN CORREGIDA Y ROBUSTA PARA DETECTAR CUALQUIER VARIANTE EN COLUMNA X
         if (xClean === '' || !xClean) {
           pendientes++;
-        } else if (xClean.includes('dentro del plazo')) {
+        } else if (xClean.includes('dentro del plazo') || xClean.includes('dentro de plazo') || xClean.includes('dentro plazo')) {
           dentroPlazo++;
-        } else if (xClean.includes('fuera del plazo') || xClean.includes('fuera de plazo')) {
+        } else if (xClean.includes('fuera del plazo') || xClean.includes('fuera de plazo') || xClean.includes('fuera plazo')) {
           fueraPlazo++;
         } else if (xClean.includes('encauzad')) {
           encauzadas++;
