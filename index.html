@@ -1035,7 +1035,7 @@
     }
 
     // ==========================================
-    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) - CORREGIDO TOTALMENTE
+    // 2. ACCESO A LA INFORMACIÓN PÚBLICA (SAIP) - AJUSTE QUIRÚRGICO
     // ==========================================
     function fetchSaipData() {
       Papa.parse(SAIP_SHEET_URL, {
@@ -1087,49 +1087,30 @@
         const fechaIngresoStr = getFieldValue(r, ['Fecha de ingreso', 'FECHA INGRESO', 'Fecha ingreso', 'FECHA DE INGRESO']) || getFieldValueByIndex(r, 13);
         const dtIngreso = parseDatePeruvian(fechaIngresoStr);
 
-        // BARRIDO GLOBAL INTELIGENTE DE TODA LA FILA PARA UBICAR EL ESTADO EXACTO SIN IMPORTAR LA COLUMNA
-        let estadoEncontrado = '';
+        // LECTURA EXACTA DE LA COLUMNA X (ÍNDICE 23) O BARRIDO SEGURO
+        let valorColumnaX = '';
         const keys = Object.keys(r);
-
-        for (let k of keys) {
-          let val = String(r[k] || '').trim().toUpperCase();
-          if (val) {
-            if (val.includes('DENTRO DEL PLAZO') || val === 'DENTRO PLAZO') {
-              estadoEncontrado = 'DENTRO';
-              break;
-            } else if (val.includes('FUERA DE PLAZO') || val === 'FUERA PLAZO') {
-              estadoEncontrado = 'FUERA';
-              break;
-            } else if (val.includes('ENCAUZAD') || val === 'ENCAUZADO') {
-              estadoEncontrado = 'ENCAUZADA';
-              break;
-            } else if (val.includes('IMPROCEDENT') || val === 'IMPROCEDENTE') {
-              estadoEncontrado = 'IMPROCEDENTE';
-              break;
-            }
-          }
+        
+        if (keys.length > 23 && r[keys[23]] !== undefined) {
+          valorColumnaX = String(r[keys[23]]).trim();
+        }
+        if (!valorColumnaX) {
+          valorColumnaX = getFieldValue(r, ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ESTADO', 'TIPO']);
         }
 
-        // Si no se encontró barriendo las celdas, intentamos de forma directa en las columnas probables (X o índice 23)
-        if (!estadoEncontrado) {
-          let valColX = getFieldValue(r, ['ATENCIÓN EN PLAZO', 'ATENCION EN PLAZO', 'ESTADO', 'TIPO']) || getFieldValueByIndex(r, 23);
-          let vUp = String(valColX).trim().toUpperCase();
-          if (vUp.includes('DENTRO')) estadoEncontrado = 'DENTRO';
-          else if (vUp.includes('FUERA')) estadoEncontrado = 'FUERA';
-          else if (vUp.includes('ENCAUZAD')) estadoEncontrado = 'ENCAUZADA';
-          else if (vUp.includes('IMPROCEDENT')) estadoEncontrado = 'IMPROCEDENTE';
-        }
+        const xClean = valorColumnaX.toUpperCase();
 
-        // ACUMULADORES DE CONTADOR SEGÚN EL ESTADO CLASIFICADO
-        if (estadoEncontrado === 'DENTRO') {
+        // CLASIFICACIÓN EXACTA Y ESTRICTA PARA EVITAR DESFAZES
+        if (xClean.includes('DENTRO DEL PLAZO') || xClean.includes('DENTRO DE PLAZO')) {
           dentroPlazo++;
-        } else if (estadoEncontrado === 'FUERA') {
+        } else if (xClean.includes('FUERA DE PLAZO') || xClean.includes('FUERA DEL PLAZO')) {
           fueraPlazo++;
-        } else if (estadoEncontrado === 'ENCAUZADA') {
+        } else if (xClean.includes('ENCAUZADO') || xClean.includes('ENCAUZAD')) {
           encauzadas++;
-        } else if (estadoEncontrado === 'IMPROCEDENTE') {
+        } else if (xClean.includes('IMPROCEDENTE') || xClean.includes('IMPROCEDENT')) {
           improcedentes++;
         } else {
+          // Si está vacío o no coincide con los anteriores, se cuenta como pendiente legítimo
           pendientes++;
         }
 
