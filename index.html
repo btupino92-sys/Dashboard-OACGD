@@ -1123,8 +1123,8 @@
         areasConsolidadas[areaKey] = (areasConsolidadas[areaKey] || 0) + 1;
       });
 
-      // Total de atenciones/plazos base para el 100% de plazos (Dentro + Fuera + Pendientes)
-      const totalAtencionesPlazo = dentroPlazo + fueraPlazo + pendientes;
+      // Base estricta del 100% para Dentro, Fuera y Pendientes
+      const totalPlazosBase = dentroPlazo + fueraPlazo + pendientes;
 
       document.getElementById('kpi-total-saip').innerText = total;
       document.getElementById('kpi-dentroplazo-saip').innerText = dentroPlazo;
@@ -1133,12 +1133,11 @@
       document.getElementById('kpi-improcedentes-saip').innerText = improcedentes;
       document.getElementById('kpi-pendientes-saip').innerText = pendientes;
 
-      // Porcentajes basados estrictamente en la base de plazos (Dentro, Fuera, Pendientes)
-      const pDentro = totalAtencionesPlazo > 0 ? ((dentroPlazo / totalAtencionesPlazo) * 100).toFixed(1) : '0.0';
-      const pFuera = totalAtencionesPlazo > 0 ? ((fueraPlazo / totalAtencionesPlazo) * 100).toFixed(1) : '0.0';
-      const pPend = totalAtencionesPlazo > 0 ? ((pendientes / totalAtencionesPlazo) * 100).toFixed(1) : '0.0';
+      // Porcentajes inferiores de las tarjetas
+      const pDentro = totalPlazosBase > 0 ? ((dentroPlazo / totalPlazosBase) * 100).toFixed(1) : '0.0';
+      const pFuera = totalPlazosBase > 0 ? ((fueraPlazo / totalPlazosBase) * 100).toFixed(1) : '0.0';
+      const pPend = totalPlazosBase > 0 ? ((pendientes / totalPlazosBase) * 100).toFixed(1) : '0.0';
 
-      // Porcentajes para Encauzadas e Improcedentes respecto al total general de solicitudes
       const pEncau = total > 0 ? ((encauzadas / total) * 100).toFixed(1) : '0.0';
       const pImproc = total > 0 ? ((improcedentes / total) * 100).toFixed(1) : '0.0';
 
@@ -1148,14 +1147,11 @@
       document.getElementById('kpi-improcedentes-percent').innerText = `${pImproc}% del total`;
       document.getElementById('kpi-pendientes-percent').innerText = `${pPend}% de atenciones`;
 
-      renderChartsSaip(dentroPlazo, fueraPlazo, encauzadas, improcedentes, pendientes, modalidades);
+      renderChartsSaip(dentroPlazo, fueraPlazo, encauzadas, improcedentes, pendientes, totalPlazosBase, total, modalidades);
       renderTableAreasSaip(areasConsolidadas, total);
     }
 
-    function renderChartsSaip(dentroPlazo, fueraPlazo, encauzadas, improcedentes, pendientes, modalidades) {
-      const totalPlazosPie = dentroPlazo + fueraPlazo + pendientes;
-      const totalGralPie = dentroPlazo + fueraPlazo + encauzadas + improcedentes + pendientes;
-
+    function renderChartsSaip(dentroPlazo, fueraPlazo, encauzadas, improcedentes, pendientes, totalPlazosBase, totalGeneral, modalidades) {
       const ctx1 = document.getElementById('chartPlazos').getContext('2d');
       if (chartPlazosObj) chartPlazosObj.destroy();
       chartPlazosObj = new Chart(ctx1, {
@@ -1179,9 +1175,9 @@
                 let label = ctx.chart.data.labels[ctx.dataIndex];
                 let pct = 0;
                 if (label.includes('Plazo') || label.includes('Pendientes')) {
-                  pct = totalPlazosPie > 0 ? ((val / totalPlazosPie) * 100).toFixed(1) : 0;
+                  pct = totalPlazosBase > 0 ? ((val / totalPlazosBase) * 100).toFixed(1) : 0;
                 } else {
-                  pct = totalGralPie > 0 ? ((val / totalGralPie) * 100).toFixed(1) : 0;
+                  pct = totalGeneral > 0 ? ((val / totalGeneral) * 100).toFixed(1) : 0;
                 }
                 return `${val}\n(${pct}%)`;
               },
